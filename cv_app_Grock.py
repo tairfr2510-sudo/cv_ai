@@ -9,7 +9,6 @@ from pathlib import Path
 from groq import Groq
 
 # ============ CONFIGURATION ============
-# ============ CONFIGURATION ============
 load_dotenv()
 
 # מנגנון חכם: קודם בודק בכספת של הענן, ואם אין - בודק בקובץ המקומי
@@ -21,6 +20,9 @@ else:
 if not API_KEY:
     st.error("❌ GROQ_API_KEY לא נמצא בהגדרות הענן או בקובץ .env מקומי")
     st.stop()
+
+# אתחול הלקוח של Groq (השורה שהייתה חסרה!)
+client = Groq(api_key=API_KEY)
 
 # ============ LATEX UTILS ============
 def escape_latex(text):
