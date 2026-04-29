@@ -21,18 +21,54 @@ if not API_KEY:
     st.error("❌ GROQ_API_KEY לא נמצא בהגדרות הענן או בקובץ .env מקומי")
     st.stop()
 
-# אתחול הלקוח של Groq (השורה שהייתה חסרה!)
+# אתחול הלקוח של Groq
 client = Groq(api_key=API_KEY)
 
-# ============ LATEX UTILS ============
-# ============ LATEX UTILS ============
+# ============ LATEX UTILS & BUILDERS ============
 def escape_latex(text):
-    """הופך תווים מיוחדים של LaTeX לטקסט בטוח בצורה חכמה"""
+    """הופך תווים מיוחדים של LaTeX לטקסט בטוח בצורה חכמה בעזרת Regex"""
     if not isinstance(text, str):
         return text
-    
-    # מחפש תווים מיוחדים שאין לפניהם לוכסן שמאלי (\), ומוסיף להם לוכסן
     return re.sub(r'(?<!\\)([&%$#_])', r'\\\1', text)
+
+def build_projects_latex(mrai_bullets, xray_bullets):
+    """בונה את קוד ה-LaTeX לפרויקטים, שומר על הקישורים והכותרות קשיחים"""
+    latex = ""
+    if mrai_bullets:
+        latex += r"\textbf{AI-Powered MRI/CT Diagnostic \& 3D Reconstruction Platform} \hfill \href{https://github.com/tairfr2510-sudo/MRAI-Tumor-Segmentation-3D-Export-Engine}{\uline{GitHub}}" + "\n"
+        latex += r"\begin{itemize}[noitemsep, topsep=2pt]" + "\n"
+        for bullet in mrai_bullets:
+            latex += f"    \\item {escape_latex(bullet)}\n"
+        latex += r"\end{itemize}" + "\n\n"
+    
+    if xray_bullets:
+        latex += r"\textbf{Autonomous X-ray Targeting \& Positioning System} \hfill \href{https://aistudio.google.com/apps/e4bd7e56-afa3-41d2-984a-88577243b839?fullscreenApplet=true&showPreview=true&showAssistant=true}{\uline{Demo}}" + "\n"
+        latex += r"\begin{itemize}[noitemsep, topsep=2pt]" + "\n"
+        for bullet in xray_bullets:
+            latex += f"    \\item {escape_latex(bullet)}\n"
+        latex += r"\end{itemize}" + "\n"
+        
+    return latex
+
+def build_experience_latex(exp_bullets):
+    """בונה את קוד ה-LaTeX לניסיון, שומר על הכותרת קשיחה"""
+    if not exp_bullets: return ""
+    latex = r"\textbf{3D Printer Operator (Meat-Replacement Printing)} \hfill 06/2022 -- 07/2023 \newline" + "\n"
+    latex += r"Redefinemeat, Rehovot" + "\n"
+    latex += r"\begin{itemize}[noitemsep, topsep=2pt]" + "\n"
+    for bullet in exp_bullets:
+        latex += f"    \\item {escape_latex(bullet)}\n"
+    latex += r"\end{itemize}" + "\n"
+    return latex
+
+def build_skills_latex(skills_dict):
+    """בונה רשימת כישורים מעוצבת בצורה בטוחה הרחק מה-AI"""
+    if not skills_dict: return ""
+    latex = r"\begin{itemize}[noitemsep, topsep=2pt]" + "\n"
+    for category, skills in skills_dict.items():
+        latex += f"    \\item \\textbf{{{escape_latex(category)}:}} {escape_latex(skills)}\n"
+    latex += r"\end{itemize}" + "\n"
+    return latex
 
 # ============ LOAD LATEX TEMPLATE ============
 LATEX_TEMPLATE = r"""\documentclass[11pt,a4paper,sans]{article}
@@ -81,7 +117,7 @@ Technion - Israel Institute of Technology \hfill \textbf{GPA: 90}
 
 \begin{itemize}[noitemsep, topsep=2pt]
     \item Dean's List (Academic Excellence): Winter 2024, Spring 2025, Winter 2026.
-    \item Key Courses: Python programming (100), "Signals and Systems" (91).
+    \item Key Courses: {{KEY_COURSES}}
 \end{itemize}
 \end{flushleft}
 
@@ -97,9 +133,17 @@ Technion - Israel Institute of Technology \hfill \textbf{GPA: 90}
 {{EXPERIENCE_SECTION}}
 \end{flushleft}
 
-% Army Service
+% Army Service (HARDCODED)
 \section{Military Service}
-{{MILITARY_SERVICE}}
+\begin{itemize}[noitemsep, topsep=2pt]
+\textbf{Soldier in the special unit ``Dia''} \hfill
+    \item Received excellence recognition in training and granted a parachute course as a prize.
+    \begin{flushleft}
+    \textbf{869th Combat Collection Battalion} \hfill
+    \end{flushleft}
+    \item Selected for the commanders' training course, Trainees commander, commander in operational line.
+    \item Team Sergeant (Operational Line):  Led the team in the absence of the team leader, made critical decisions under pressure, and oversaw soldiers while managing the team logistics.
+\end{itemize}
 
 % Skills
 \section{Skills}
@@ -119,12 +163,12 @@ FACT_SHEET = """
 - Education: 3rd-year B.Sc. in Biomedical Engineering, Technion - Israel Institute of Technology.
 - GPA: 90
 - Honors: Dean's List (Winter 2024, Spring 2025, Winter 2026).
-- Key Coursework & Grades: Python Programming (100), Biological Fluid Mechanics (100), Signals and Systems (91).
+- Key Coursework: Python Programming (100), Biological Fluid Mechanics (100), Signals and Systems (91).
 
 [PROFESSIONAL EXPERIENCE]
-- Role: 3D Printer Operator for Meat-Replacement Products
-- Company: Redefine Meat (06/2022 - 07/2023)
-- Details: Operated and optimized 3D printers specifically for meat substitutes (not medical bioprinting). 
+- Role: 3D Printer Operator (Meat-Replacement Printing)
+- Company: Redefinemeat, Rehovot (06/2022 - 07/2023)
+- Details: Operated and optimized 3D printers specifically for meat substitutes. 
 - Achievements: Collaborated with R&D on troubleshooting and protocol development. Initiated and built a SharePoint site for the team and implemented Excel data tracking to enhance productivity.
 
 [ENGINEERING PROJECTS]
@@ -140,19 +184,9 @@ FACT_SHEET = """
    - Mechanism: Developed a Python-based state machine (Idle, Macro Move, Micro Center) for precise motion control.
    - Features: Real-time pose detection, dynamic 3x auto-zooming, moving crosshair alignment, and image enhancement (CLAHE).
 
-3. Bionic Hand Design:
-   - Tech Stack: SolidWorks.
-   - Details: Mechanical design and modeling of a tendon-driven "Pull Block" mechanism. Conducted stress analysis (FEA) and buckling simulations.
-
-[MILITARY SERVICE]
-- Role: Team Sergeant, Special Unit "DIA" (869th Combat Collection Battalion).
-- Details: Led the team in operational lines, managed logistics, and made critical decisions under pressure. 
-- Honors: Received excellence recognition in training and granted a parachute course as a prize. Trainees commander.
-
 [SKILLS]
-- Programming & AI: Python, PyTorch, OpenCV, MediaPipe, NLP.
-- Engineering Tools: SolidWorks (FEA, Buckling), MATLAB.
-- General Tech & Soft Skills: Excel, SharePoint, Analytical Thinking, Quick Learner, Team Leadership.
+- Technical: Python, PyTorch, OpenCV, MediaPipe, NLP, SolidWorks, MATLAB, Excel, SharePoint.
+- Soft Skills: Analytical Thinking, Quick Learner, Team Leadership, Problem Solving.
 """
 
 # ============ STREAMLIT PAGE CONFIG ============
@@ -174,7 +208,7 @@ with st.sidebar:
     2. **Click "Customize Resume"** - AI tailors your CV to the JD
     3. **Download PDF** - Get your personalized resume
     
-    ⚠️ **Note:** Your personal data is hardcoded to prevent AI hallucinations.
+    ⚠️ **Note:** Military Service, Project Links, and Job Titles are hardcoded to protect PDF integrity.
     """)
 
 # ============ MAIN APP ============
@@ -207,11 +241,12 @@ st.subheader("🧪 Debugging Area")
 if st.button("בדיקת PDF עם נתוני דמי (חוסך זמן)", use_container_width=True):
     mock_data = {
         "CAREER_OBJECTIVE": "Test objective for PDF generation.",
-        "PROJECTS_SECTION": r"\textbf{Test Project} \hfill \href{https://google.com}{\uline{Link}} \begin{itemize}[noitemsep, topsep=2pt] \item Item 1 \item Item 2 \end{itemize}",
-        "EXPERIENCE_SECTION": r"\textbf{Test Exp} \hfill 2024 \newline Company \begin{itemize}[noitemsep, topsep=2pt] \item Exp 1 \end{itemize}",
-        "MILITARY_SERVICE": r"Test military service description.",
-        "SKILLS_SECTION": r"\begin{itemize}[noitemsep, topsep=2pt] \item \textbf{Tech:} Python, LaTeX \end{itemize}"
+        "KEY_COURSES": "Python programming (100), Signals and Systems (91)",
+        "PROJECTS_SECTION": build_projects_latex(["Mock MRAI Bullet 1", "Mock MRAI Bullet 2"], ["Mock XRAY Bullet 1"]),
+        "EXPERIENCE_SECTION": build_experience_latex(["Mock Experience Bullet 1"]),
+        "SKILLS_SECTION": build_skills_latex({"Technical": "Python, LaTeX", "Soft Skills": "Teamwork"})
     }
+    st.session_state.analysis = "This is a mock analysis text."
     st.session_state.generated_sections = mock_data
     st.success("✅ נתוני דמי נטענו! עכשיו אפשר ללחוץ על 'Generate PDF Resume' למטה.")
 
@@ -222,52 +257,47 @@ if st.button("🚀 Customize Resume", key="customize_btn", use_container_width=T
     if not job_description.strip():
         st.error("❌ אנא הכנס תיאור משרה קודם!")
     else:
-        st.info("⏳ מנוע Llama 3 (Groq) מנתח את המשרה ומשכתב את קורות החיים...")
+        st.info("⏳ מנוע Llama 3.3 (Groq) מנתח את המשרה ומשכתב את קורות החיים...")
         
         try:
             master_prompt = f"""
-            Act as a Senior Israeli Headhunter and ATS Expert. 
-            Your goal is to execute a full CV Optimization Pipeline: analyze a Job Description (JD), analyze the candidate's Fact Sheet, and output a highly targeted, ATS-optimized resume.
+            Act as a Senior Israeli Headhunter and ATS Expert.
+            Your task is to tailor the candidate's content to perfectly match the provided Job Description (JD).
 
             INPUTS:
             - Job Description (JD): {job_description}
             - Candidate Fact Sheet: {FACT_SHEET}
 
-            PIPELINE INSTRUCTIONS:
-            1. JD Breakdown & Match Analysis: 
-               Identify must-have requirements, critical skills, and exact keywords from the JD. Evaluate the candidate's match (Strengths, Gaps).
-            
-            2. Targeted Rewrite (The core task): 
-               Rewrite the candidate's Experience and Projects to perfectly align with the JD.
-               - Use 3-5 bullet points per role/project.
+            INSTRUCTIONS:
+            1. ANALYSIS: Evaluate the match between the candidate and the JD.
+            2. CAREER OBJECTIVE: Write a sharp 3-4 line objective tailored to the JD. Do NOT hallucinate.
+            3. KEY COURSES: Select EXACTLY 2 or 3 most relevant courses from the Fact Sheet (e.g., "Python programming (100), Signals and Systems (91)").
+            4. BULLET POINTS (Projects & Experience):
+               - Write exactly 3-4 bullet points for the MRAI Engine project.
+               - Write exactly 3-4 bullet points for the Autonomous X-Ray project.
+               - Write exactly 3-4 bullet points for the 3D Printer Operator role.
                - RULE: EVERY bullet MUST follow the 'Action + Impact + Result' formula.
-               - RULE: Naturally embed EXACT keywords from the JD into the bullet points.
-               - RULE: DO NOT invent or hallucinate metrics, experience, or numbers. Stay 100% truthful to the Fact Sheet.
+               - RULE: Embed EXACT keywords from the JD naturally. Do NOT invent metrics or fake experience.
+            5. SKILLS: Select and group the most relevant skills into 2 categories (e.g., "Technical", "Soft Skills").
+
+            OUTPUT FORMAT (JSON ONLY):
+            Return ONLY a raw JSON object. Do not use Markdown formatting (no ```json). 
+            Do NOT include any LaTeX commands (no \\textbf, no \\begin). Return pure plain text inside the JSON values.
             
-            3. Headline & Summary: 
-               Create a sharp, tailored headline and a 3-4 line summary highlighting the candidate's professional identity, relevant experience, and unique differentiation for this specific role.
-            
-            4. Skills Optimization: 
-               Filter and prioritize ONLY the skills from the Fact Sheet that are highly relevant to the JD.
-
-            OUTPUT FORMAT:
-            You MUST return ONLY a valid JSON object. Do not wrap it in markdown block quotes (no ```json).
-            The JSON MUST contain these EXACT keys. The values for all keys (except ANALYSIS_TEXT) must be written in strict LaTeX code.
-
-            - "ANALYSIS_TEXT": A detailed Markdown string containing: JD Breakdown, CV Score (0-100), Match Score (0-100), Quick Verdict, Strengths, Gaps, and areas for immediate improvement.
-            - "CAREER_OBJECTIVE": The tailored Headline and Summary. (Use LaTeX formatting).
-            - "PROJECTS_SECTION": The tailored projects. MUST use \\begin{{itemize}} ... \\item [Action + Impact + Result] ... \\end{{itemize}}.
-            - "EXPERIENCE_SECTION": The tailored experience. MUST use \\begin{{itemize}} ... \\item [Action + Impact + Result] ... \\end{{itemize}}.
-            - "MILITARY_SERVICE": Tailored military service emphasizing relevant soft/hard skills. MUST use \\begin{{itemize}} ... \\item ... \\end{{itemize}}.
-            - "SKILLS_SECTION": Relevant skills grouped logically. MUST use \\begin{{itemize}} ... \\item \\textbf{{Category:}} Skills ... \\end{{itemize}}.
-
-            LATEX RULES FOR SECTIONS:
-            - Use \\textbf{{}} for bold text.
-            - Ensure all special characters like &, $, %, or _ are escaped (e.g., \\&).
-            - Keep a linear, clean structure suitable for ATS parsers (No tables, no graphics).
+            {{
+                "ANALYSIS_TEXT": "Markdown string with JD Breakdown, Match Score, Strengths, and Gaps.",
+                "CAREER_OBJECTIVE": "Plain text summary.",
+                "KEY_COURSES": "Plain text courses string.",
+                "MRAI_BULLETS": ["Bullet 1", "Bullet 2", "Bullet 3"],
+                "XRAY_BULLETS": ["Bullet 1", "Bullet 2", "Bullet 3"],
+                "EXPERIENCE_BULLETS": ["Bullet 1", "Bullet 2", "Bullet 3"],
+                "SKILLS": {{
+                    "Technical": "Python, SolidWorks...",
+                    "Soft Skills": "Analytical Thinking..."
+                }}
+            }}
             """
 
-            # קריאה לשרתי Groq תוך כפיית JSON
             chat_completion = client.chat.completions.create(
                 messages=[
                     {
@@ -275,28 +305,27 @@ if st.button("🚀 Customize Resume", key="customize_btn", use_container_width=T
                         "content": master_prompt,
                     }
                 ],
-                model="llama-3.3-70b-versatile", # מודל חזק ומהיר מאוד
-                temperature=0.2, # שומר על התשובה מדויקת ולא יצירתית מדי
-                response_format={"type": "json_object"} # מונע קריסות - השרת חייב להחזיר JSON
+                model="llama-3.3-70b-versatile",
+                temperature=0.2,
+                response_format={"type": "json_object"}
             )
             
             raw_text = chat_completion.choices[0].message.content
             
-            # וידוא גיבוי למקרה שיש טקסט מסביב ל-JSON
             match = re.search(r'\{.*\}', raw_text, re.DOTALL)
             if match:
                 data = json.loads(match.group(0))
             else:
                 data = json.loads(raw_text)
             
-            # אחסון התוצאות
+            # הרכבה בטוחה של ה-LaTeX (הסוף לקריסות!)
             st.session_state.analysis = data.get("ANALYSIS_TEXT", "לא נוצר ניתוח.")
             st.session_state.generated_sections = {
-                "CAREER_OBJECTIVE": data.get("CAREER_OBJECTIVE", ""),
-                "PROJECTS_SECTION": data.get("PROJECTS_SECTION", ""),
-                "EXPERIENCE_SECTION": data.get("EXPERIENCE_SECTION", ""),
-                "MILITARY_SERVICE": data.get("MILITARY_SERVICE", ""),
-                "SKILLS_SECTION": data.get("SKILLS_SECTION", "")
+                "CAREER_OBJECTIVE": escape_latex(data.get("CAREER_OBJECTIVE", "")),
+                "KEY_COURSES": escape_latex(data.get("KEY_COURSES", "")),
+                "PROJECTS_SECTION": build_projects_latex(data.get("MRAI_BULLETS", []), data.get("XRAY_BULLETS", [])),
+                "EXPERIENCE_SECTION": build_experience_latex(data.get("EXPERIENCE_BULLETS", [])),
+                "SKILLS_SECTION": build_skills_latex(data.get("SKILLS", {}))
             }
             
             st.success("✅ הניתוח והשכתוב הושלמו בהצלחה ובמהירות האור!")
@@ -317,9 +346,9 @@ if "generated_sections" in st.session_state:
     
     sections_display = {
         "CAREER_OBJECTIVE": "Career Objective",
-        "PROJECTS_SECTION": "Projects",
-        "EXPERIENCE_SECTION": "Professional Experience",
-        "MILITARY_SERVICE": "Military Service",
+        "KEY_COURSES": "Selected Courses",
+        "PROJECTS_SECTION": "Projects (Protected Links)",
+        "EXPERIENCE_SECTION": "Professional Experience (Protected Title)",
         "SKILLS_SECTION": "Skills"
     }
     
@@ -338,8 +367,8 @@ if "generated_sections" in st.session_state:
             
             for section_key, section_content in st.session_state.generated_sections.items():
                 placeholder = f"{{{{{section_key}}}}}"
-                clean_content = escape_latex(section_content)
-                latex_content = latex_content.replace(placeholder, clean_content)
+                # אנחנו לא עושים escape_latex פה כי זה כבר נעשה בפונקציות הבנייה
+                latex_content = latex_content.replace(placeholder, section_content)
             
             with tempfile.TemporaryDirectory() as tmpdir:
                 tex_file = Path(tmpdir) / "resume.tex"
@@ -375,4 +404,4 @@ if "generated_sections" in st.session_state:
             st.error(f"❌ Error generating PDF: {str(e)}")
 
 st.markdown("---")
-st.caption("🔐 Powered by Groq. Your personal data is hardcoded to prevent AI hallucinations.")
+st.caption("🔐 Powered by Groq. Core structures are hardcoded to prevent AI hallucinations.")
