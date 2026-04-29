@@ -25,24 +25,14 @@ if not API_KEY:
 client = Groq(api_key=API_KEY)
 
 # ============ LATEX UTILS ============
+# ============ LATEX UTILS ============
 def escape_latex(text):
-    """הופך תווים מיוחדים של LaTeX לטקסט בטוח בלי לשבור פקודות"""
+    """הופך תווים מיוחדים של LaTeX לטקסט בטוח בצורה חכמה"""
     if not isinstance(text, str):
         return text
     
-    replacements = {
-        '&': r'\&',
-        '%': r'\%',
-        '$': r'\$',
-        '#': r'\#',
-        '_': r'\_',
-    }
-    
-    for char, replacement in replacements.items():
-        if f'\\{char}' not in text: 
-            text = text.replace(char, replacement)
-    
-    return text
+    # מחפש תווים מיוחדים שאין לפניהם לוכסן שמאלי (\), ומוסיף להם לוכסן
+    return re.sub(r'(?<!\\)([&%$#_])', r'\\\1', text)
 
 # ============ LOAD LATEX TEMPLATE ============
 LATEX_TEMPLATE = r"""\documentclass[11pt,a4paper,sans]{article}
