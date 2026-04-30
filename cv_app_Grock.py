@@ -261,39 +261,54 @@ if st.button("🚀 Customize Resume", key="customize_btn", use_container_width=T
         try:
             master_prompt = f"""
             Act as a Senior Israeli Headhunter and ATS Expert.
-            Your task is to tailor the candidate's content to perfectly match the provided Job Description (JD).
-
+            Your task is to tailor the candidate's content to perfectly match the provided Job Description (JD) while strictly adhering to a 1-page CV limit (maximum 400 words total).
+            
             INPUTS:
             - Job Description (JD): {job_description}
             - Candidate Fact Sheet: {FACT_SHEET}
-
+            
             INSTRUCTIONS:
-            1. ANALYSIS: Evaluate the match between the candidate and the JD.
+            1. ATS ANALYSIS: Evaluate the match between the candidate and the JD. Calculate an ATS score (0-100) and explicitly list missing keywords.
             2. CAREER OBJECTIVE: Write a sharp 3-4 line objective tailored to the JD. Do NOT hallucinate.
-            3. KEY COURSES: Select EXACTLY 2 or 3 most relevant courses from the Fact Sheet (e.g., "Python programming (100), Signals and Systems (91)").
-            4. BULLET POINTS (Projects & Experience):
-               - Write exactly 3-4 bullet points for the MRAI Engine project.
-               - Write exactly 3-4 bullet points for the Autonomous X-Ray project.
-               - Write exactly 3-4 bullet points for the 3D Printer Operator role.
-               - RULE: EVERY bullet MUST follow the 'Action + Impact + Result' formula.
-               - RULE: Embed EXACT keywords from the JD naturally. Do NOT invent metrics or fake experience.
-            5. SKILLS: Select and group the most relevant skills into 2 categories (e.g., "Technical", "Soft Skills").
-
+            3. KEY COURSES: Select EXACTLY 2 or 3 most relevant courses from the Fact Sheet.
+            4. PROJECTS (DYNAMIC SELECTION):
+               - Review all projects listed in the Candidate Fact Sheet.
+               - Select EXACTLY 2 projects that are MOST RELEVANT to the provided Job Description.
+               - For EACH of the 2 selected projects, write exactly 3-4 highly concise bullet points.
+               - CRITICAL RULE: EVERY bullet MUST follow the 'Action + Impact + Result' formula.
+               - CRITICAL RULE: Embed EXACT keywords from the JD naturally. Do NOT invent metrics, skills, or fake experience. Keep sentences short.
+            5. EXPERIENCE: Write exactly 3-4 highly concise bullet points for the 3D Printer Operator role.
+            6. SKILLS: Select and group the most relevant skills into exactly 2 categories (e.g., "Technical", "Soft Skills").
+            7. SUMMARY_OF_CHANGES: Provide 2-3 brief bullets explaining the main modifications made to improve ATS compatibility.
+            
             OUTPUT FORMAT (JSON ONLY):
             Return ONLY a raw JSON object. Do not use Markdown formatting (no ```json). 
-            Do NOT include any LaTeX commands (no \\textbf, no \\begin). Return pure plain text inside the JSON values.
+            Do NOT include any LaTeX commands. Return pure plain text inside the JSON values.
             
             {{
-                "ANALYSIS_TEXT": "Markdown string with JD Breakdown, Match Score, Strengths, and Gaps.",
+                "ATS_ANALYSIS": {{
+                    "Score": 85,
+                    "Explanation": "Short sentence explaining the score.",
+                    "Missing_Keywords": ["Keyword1", "Keyword2"]
+                }},
                 "CAREER_OBJECTIVE": "Plain text summary.",
                 "KEY_COURSES": "Plain text courses string.",
-                "MRAI_BULLETS": ["Bullet 1", "Bullet 2", "Bullet 3"],
-                "XRAY_BULLETS": ["Bullet 1", "Bullet 2", "Bullet 3"],
+                "PROJECTS": [
+                    {{
+                        "Project_Name": "Name of the first selected project",
+                        "Bullets": ["Bullet 1", "Bullet 2", "Bullet 3"]
+                    }},
+                    {{
+                        "Project_Name": "Name of the second selected project",
+                        "Bullets": ["Bullet 1", "Bullet 2", "Bullet 3"]
+                    }}
+                ],
                 "EXPERIENCE_BULLETS": ["Bullet 1", "Bullet 2", "Bullet 3"],
                 "SKILLS": {{
                     "Technical": "Python, SolidWorks...",
                     "Soft Skills": "Analytical Thinking..."
-                }}
+                }},
+                "SUMMARY_OF_CHANGES": ["Change 1", "Change 2"]
             }}
             """
 
