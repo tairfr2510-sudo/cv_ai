@@ -26,27 +26,73 @@ client = Groq(api_key=API_KEY)
 
 # ============ LATEX UTILS & BUILDERS ============
 def escape_latex(text):
-    """הופך תווים מיוחדים של LaTeX לטקסט בטוח בצורה חכמה בעזרת Regex"""
-    if not isinstance(text, str):
-        return text
-    return re.sub(r'(?<!\\)([&%$#_])', r'\\\1', text)
+    """פונקציית עזר לניקוי תווים מיוחדים ב-LaTeX כדי למנוע שגיאות קימפול"""
+    if not text:
+        return ""
+    chars = {
+        '&': r'\&', '%': r'\%', '$': r'\$', '#': r'\#', '_': r'\_',
+        '{': r'\{', '}': r'\}', '~': r'\textasciitilde{}',
+        '^': r'\textasciicircum{}', '\\': r'\textbackslash{}'
+    }
+    return "".join(chars.get(c, c) for c in str(text))
 
-def build_projects_latex(mrai_bullets, xray_bullets):
-    """בונה את קוד ה-LaTeX לפרויקטים, שומר על הקישורים והכותרות קשיחים"""
+def build_projects_latex(dynamic_projects):
+    """
+    בונה את קוד ה-LaTeX לפרויקטים באופן דינמי לפי מה שהמודל בחר.
+    משתמש בזיהוי מילות מפתח כדי להצמיד את הקישור והכותרת הקשיחים הנכונים.
+    """
+    if not dynamic_projects:
+        return ""
+        
     latex = ""
-    if mrai_bullets:
-        latex += r"\textbf{AI-Powered MRI/CT Diagnostic \& 3D Reconstruction Platform} \hfill \href{https://github.com/tairfr2510-sudo/MRAI-Tumor-Segmentation-3D-Export-Engine}{\uline{GitHub}}" + "\n"
+    
+    # מאגר הפרויקטים - כותרות וקישורים קשיחים ללא שגיאות LaTeX
+    PROJECTS_DB = {
+        "mrai": {
+            "keywords": ["mrai", "mri", "ct", "diagnostic", "reconstruction"],
+            "title": r"\textbf{AI-Powered MRI/CT Diagnostic \& 3D Reconstruction Platform}",
+            "link": r"\hfill \href{[https://github.com/tairfr2510-sudo/MRAI-Tumor-Segmentation-3D-Export-Engine](https://github.com/tairfr2510-sudo/MRAI-Tumor-Segmentation-3D-Export-Engine)}{\uline{GitHub}}"
+        },
+        "xray": {
+            "keywords": ["x-ray", "xray", "autonomous", "targeting", "positioning"],
+            "title": r"\textbf{Autonomous X-ray Targeting \& Positioning System}",
+            "link": r"\hfill \href{[https://aistudio.google.com/apps/e4bd7e56-afa3-41d2-984a-88577243b839?fullscreenApplet=true&showPreview=true&showAssistant=true](https://aistudio.google.com/apps/e4bd7e56-afa3-41d2-984a-88577243b839?fullscreenApplet=true&showPreview=true&showAssistant=true)}{\uline{Demo}}"
+        },
+        "bionic_arm": {
+            "keywords": ["bionic", "arm", "prosthetic", "hand"],
+            "title": r"\textbf{Bionic Arm Development Project}",
+            # שים לב: אם יש לך קישור ליד הביונית, החלף את '#' בקישור האמיתי. אם אין, תשאיר ריק ("")
+            "link": r"\hfill \href{#}{\uline{Project}}" 
+        }
+    }
+
+    for project in dynamic_projects:
+        model_project_name = project.get("Project_Name", "").lower()
+        bullets = project.get("Bullets", [])
+        
+        if not bullets:
+            continue
+            
+        # מנסים לזהות איזה פרויקט המודל בחר לפי השם שהוא החזיר
+        matched_project = None
+        for key, db_data in PROJECTS_DB.items():
+            if any(kw in model_project_name for kw in db_data["keywords"]):
+                matched_project = db_data
+                break
+        
+        # אם זיהינו את הפרויקט, נשתמש בכותרת ובקישור הקשיחים שלנו
+        if matched_project:
+            latex += matched_project["title"] + " " + matched_project["link"] + "\n"
+        else:
+            # מקרה גיבוי אם המודל המציא כותרת קצת שונה
+            fallback_title = escape_latex(project.get("Project_Name", "Unknown Project"))
+            latex += rf"\textbf{{{fallback_title}}}" + "\n"
+            
+        # הדפסת הנקודות שהמודל יצר באופטימיזציה ל-ATS
         latex += r"\begin{itemize}[noitemsep, topsep=2pt]" + "\n"
-        for bullet in mrai_bullets:
+        for bullet in bullets:
             latex += f"    \\item {escape_latex(bullet)}\n"
         latex += r"\end{itemize}" + "\n\n"
-    
-    if xray_bullets:
-        latex += r"\textbf{Autonomous X-ray Targeting \& Positioning System} \hfill \href{https://aistudio.google.com/apps/e4bd7e56-afa3-41d2-984a-88577243b839?fullscreenApplet=true&showPreview=true&showAssistant=true}{\uline{Demo}}" + "\n"
-        latex += r"\begin{itemize}[noitemsep, topsep=2pt]" + "\n"
-        for bullet in xray_bullets:
-            latex += f"    \\item {escape_latex(bullet)}\n"
-        latex += r"\end{itemize}" + "\n"
         
     return latex
 
@@ -259,59 +305,58 @@ if st.button("🚀 Customize Resume", key="customize_btn", use_container_width=T
         st.info("⏳ מנוע Llama 3.3 (Groq) מנתח את המשרה ומשכתב את קורות החיים...")
         
         try:
-            master_prompt = f"""
-            Act as a Senior Israeli Headhunter and ATS Expert.
-            Your task is to tailor the candidate's content to perfectly match the provided Job Description (JD) while strictly adhering to a 1-page CV limit (maximum 400 words total).
-            
-            INPUTS:
-            - Job Description (JD): {job_description}
-            - Candidate Fact Sheet: {FACT_SHEET}
-            
-            INSTRUCTIONS:
-            1. ATS ANALYSIS: Evaluate the match between the candidate and the JD. Calculate an ATS score (0-100) and explicitly list missing keywords.
-            2. CAREER OBJECTIVE: Write a sharp 3-4 line objective tailored to the JD. Do NOT hallucinate.
-            3. KEY COURSES: Select EXACTLY 2 or 3 most relevant courses from the Fact Sheet.
-            4. PROJECTS (DYNAMIC SELECTION):
-               - Review all projects listed in the Candidate Fact Sheet.
-               - Select EXACTLY 2 projects that are MOST RELEVANT to the provided Job Description.
-               - For EACH of the 2 selected projects, write exactly 3-4 highly concise bullet points.
-               - CRITICAL RULE: EVERY bullet MUST follow the 'Action + Impact + Result' formula.
-               - CRITICAL RULE: Embed EXACT keywords from the JD naturally. Do NOT invent metrics, skills, or fake experience. Keep sentences short.
-            5. EXPERIENCE: Write exactly 3-4 highly concise bullet points for the 3D Printer Operator role.
-            6. SKILLS: Select and group the most relevant skills into exactly 2 categories (e.g., "Technical", "Soft Skills").
-            7. SUMMARY_OF_CHANGES: Provide 2-3 brief bullets explaining the main modifications made to improve ATS compatibility.
-            
-            OUTPUT FORMAT (JSON ONLY):
-            Return ONLY a raw JSON object. Do not use Markdown formatting (no ```json). 
-            Do NOT include any LaTeX commands. Return pure plain text inside the JSON values.
-            
-            {{
-                "ATS_ANALYSIS": {{
-                    "Score": 85,
-                    "Explanation": "Short sentence explaining the score.",
-                    "Missing_Keywords": ["Keyword1", "Keyword2"]
-                }},
-                "CAREER_OBJECTIVE": "Plain text summary.",
-                "KEY_COURSES": "Plain text courses string.",
-                "PROJECTS": [
-                    {{
-                        "Project_Name": "Name of the first selected project",
-                        "Bullets": ["Bullet 1", "Bullet 2", "Bullet 3"]
+            master_prompt =f""" 
+                Act as a Senior Israeli Headhunter and ATS Expert.
+                Your task is to tailor the candidate's content to perfectly match the provided Job Description (JD) while strictly adhering to a 1-page CV limit (maximum 400 words total).
+                
+                INPUTS:
+                - Job Description (JD): {job_description}
+                - Candidate Fact Sheet: {FACT_SHEET}
+                
+                INSTRUCTIONS:
+                1. ATS ANALYSIS: Evaluate the match. Calculate an ATS score (0-100) and explicitly list missing keywords.
+                2. CAREER OBJECTIVE: Write a sharp 3-4 line objective tailored to the JD. Do NOT hallucinate.
+                3. KEY COURSES: Select EXACTLY 2 or 3 most relevant courses from the Fact Sheet.
+                4. PROJECTS (DYNAMIC SELECTION):
+                   - Review all projects listed in the Candidate Fact Sheet (e.g., MRAI, Autonomous X-ray, Bionic Arm).
+                   - Select EXACTLY 2 projects that are MOST RELEVANT to the provided Job Description. You MUST NOT leave this section empty.
+                   - For EACH of the 2 selected projects, write exactly 3-4 highly concise bullet points.
+                   - CRITICAL RULE: EVERY bullet MUST follow the 'Action + Impact + Result' formula.
+                   - CRITICAL RULE: Embed EXACT keywords from the JD naturally. Do NOT invent metrics, skills, or fake experience.
+                5. EXPERIENCE: Write exactly 3-4 highly concise bullet points for the 3D Printer Operator role.
+                6. SKILLS: Select and group the most relevant skills into exactly 2 categories (e.g., "Technical", "Soft Skills").
+                7. SUMMARY_OF_CHANGES: Provide 2-3 brief bullets explaining the main modifications.
+                
+                OUTPUT FORMAT (JSON ONLY):
+                Return ONLY a raw JSON object. Do not use Markdown formatting (no ```json). 
+                Do NOT include any LaTeX commands. Return pure plain text inside the JSON values.
+                
+                {{
+                    "ATS_ANALYSIS": {{
+                        "Score": 85,
+                        "Explanation": "Short sentence explaining the score.",
+                        "Missing_Keywords": ["Keyword1", "Keyword2"]
                     }},
-                    {{
-                        "Project_Name": "Name of the second selected project",
-                        "Bullets": ["Bullet 1", "Bullet 2", "Bullet 3"]
-                    }}
-                ],
-                "EXPERIENCE_BULLETS": ["Bullet 1", "Bullet 2", "Bullet 3"],
-                "SKILLS": {{
-                    "Technical": "Python, SolidWorks...",
-                    "Soft Skills": "Analytical Thinking..."
-                }},
-                "SUMMARY_OF_CHANGES": ["Change 1", "Change 2"]
-            }}
-            """
-
+                    "CAREER_OBJECTIVE": "Plain text summary.",
+                    "KEY_COURSES": "Plain text courses string.",
+                    "PROJECTS": [
+                        {{
+                            "Project_Name": "Name of the first selected project",
+                            "Bullets": ["Bullet 1", "Bullet 2", "Bullet 3"]
+                        }},
+                        {{
+                            "Project_Name": "Name of the second selected project",
+                            "Bullets": ["Bullet 1", "Bullet 2", "Bullet 3"]
+                        }}
+                    ],
+                    "EXPERIENCE_BULLETS": ["Bullet 1", "Bullet 2", "Bullet 3"],
+                    "SKILLS": {{
+                        "Technical": "Python, SolidWorks...",
+                        "Soft Skills": "Analytical Thinking..."
+                    }},
+                    "SUMMARY_OF_CHANGES": ["Change 1", "Change 2"]
+                }}
+                """
             chat_completion = client.chat.completions.create(
                 messages=[
                     {
