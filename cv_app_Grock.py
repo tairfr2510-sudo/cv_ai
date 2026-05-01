@@ -243,82 +243,241 @@ FACT_SHEET = """
 
 # ============ STREAMLIT PAGE CONFIG ============
 st.set_page_config(
-    page_title="Resume Customizer",
-    page_icon="📄",
+    page_title="CV.AI — Resume Customizer",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-st.title("🎯 AI-Powered Resume Customizer (Groq Engine)")
-st.markdown("---")
+# ============ DARK THEME CSS ============
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-# ============ SIDEBAR - INSTRUCTIONS ============
+html, body, .stApp {
+    background: #070d1a !important;
+    font-family: 'Inter', sans-serif !important;
+    color: #c8d8f0 !important;
+}
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background: #0b1325 !important;
+    border-right: 1px solid #1a2e50 !important;
+}
+[data-testid="stSidebar"] * { color: #8aa8d4 !important; }
+[data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
+    color: #00c8ff !important;
+}
+
+/* Headings */
+h1 { color: #00c8ff !important; font-weight: 700 !important; letter-spacing: -0.5px !important; }
+h2, h3 { color: #5ba3ff !important; font-weight: 600 !important; }
+
+/* Text areas */
+textarea {
+    background-color: #0d1829 !important;
+    color: #a8c7fa !important;
+    border: 1px solid #1e3a5f !important;
+    border-radius: 10px !important;
+    font-family: 'Inter', monospace !important;
+    font-size: 13px !important;
+}
+textarea:focus {
+    border: 1px solid #00c8ff !important;
+    box-shadow: 0 0 0 2px rgba(0,200,255,0.15) !important;
+}
+textarea:disabled {
+    background-color: #080f1c !important;
+    color: #4a6080 !important;
+    border-color: #112035 !important;
+}
+
+/* Buttons */
+.stButton > button {
+    background: linear-gradient(135deg, #0a2a6e 0%, #0057cc 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid #1a6fff !important;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    letter-spacing: 0.3px !important;
+    padding: 10px 20px !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 15px rgba(0,80,200,0.3) !important;
+}
+.stButton > button:hover {
+    background: linear-gradient(135deg, #0f3a8a 0%, #0070ff 100%) !important;
+    box-shadow: 0 4px 20px rgba(0,100,255,0.5) !important;
+    transform: translateY(-1px) !important;
+}
+.stButton > button:active { transform: translateY(0px) !important; }
+
+/* Download button — green accent */
+.stDownloadButton > button {
+    background: linear-gradient(135deg, #0a4a2a 0%, #00a854 100%) !important;
+    border: 1px solid #00cc66 !important;
+    box-shadow: 0 4px 15px rgba(0,180,80,0.3) !important;
+}
+.stDownloadButton > button:hover {
+    background: linear-gradient(135deg, #0d5c34 0%, #00cc66 100%) !important;
+    box-shadow: 0 4px 20px rgba(0,200,100,0.5) !important;
+}
+
+/* Expanders */
+[data-testid="stExpander"] {
+    background: #0b1628 !important;
+    border: 1px solid #1a2e50 !important;
+    border-radius: 12px !important;
+    margin-bottom: 8px !important;
+}
+.streamlit-expanderHeader {
+    color: #5ba3ff !important;
+    font-weight: 600 !important;
+}
+.streamlit-expanderContent {
+    background: #080f1e !important;
+    border-top: 1px solid #1a2e50 !important;
+}
+
+/* Metrics (ATS scores) */
+[data-testid="stMetric"] {
+    background: linear-gradient(135deg, #0b1628 0%, #0f1f3a 100%) !important;
+    border: 1px solid #1a2e50 !important;
+    border-radius: 14px !important;
+    padding: 20px !important;
+}
+[data-testid="stMetricLabel"] { color: #7a9cc4 !important; font-size: 13px !important; }
+[data-testid="stMetricValue"] { color: #00c8ff !important; font-size: 28px !important; font-weight: 700 !important; }
+[data-testid="stMetricDelta"] { color: #00e676 !important; }
+
+/* Info / success / error boxes */
+[data-testid="stAlert"] {
+    border-radius: 10px !important;
+    border: none !important;
+}
+.stSuccess {
+    background-color: #071e12 !important;
+    border-left: 3px solid #00e676 !important;
+    color: #00e676 !important;
+}
+.stInfo {
+    background-color: #071525 !important;
+    border-left: 3px solid #00c8ff !important;
+    color: #7ec8ff !important;
+}
+.stError {
+    background-color: #1e0707 !important;
+    border-left: 3px solid #ff4d4d !important;
+}
+
+/* Code blocks */
+code { background: #0d1829 !important; color: #7ec8ff !important; border-radius: 4px !important; }
+pre { background: #0a1220 !important; border: 1px solid #1a2e50 !important; border-radius: 10px !important; }
+
+/* Divider */
+hr { border-color: #1a2e50 !important; }
+
+/* Labels */
+label { color: #7a9cc4 !important; font-size: 13px !important; font-weight: 500 !important; }
+
+/* Column containers */
+[data-testid="column"] {
+    background: #0b1628 !important;
+    border: 1px solid #1a2e50 !important;
+    border-radius: 14px !important;
+    padding: 20px !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ============ HEADER ============
+st.markdown("""
+<div style="text-align:center; padding: 24px 0 8px 0;">
+    <h1 style="font-size:2.6rem; margin:0; background: linear-gradient(90deg,#00c8ff,#5ba3ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
+        ⚡ CV.AI
+    </h1>
+    <p style="color:#4a7aaa; font-size:15px; margin-top:6px; letter-spacing:1px;">
+        ATS-OPTIMIZED RESUME CUSTOMIZER — POWERED BY GROQ / LLAMA 3.3
+    </p>
+</div>
+""", unsafe_allow_html=True)
+st.markdown("<hr style='margin:0 0 24px 0;'>", unsafe_allow_html=True)
+
+# ============ SIDEBAR ============
 with st.sidebar:
-    st.header("📋 How It Works")
     st.markdown("""
-    1. **Paste a Job Description (JD)** - Copy-paste the job requirements
-    2. **Click "Customize Resume"** - AI tailors your CV to the JD
-    3. **Download PDF** - Get your personalized resume
-    
-    ⚠️ **Note:** Military Service, Project Links, and Job Titles are hardcoded to protect PDF integrity.
-    """)
+    <div style="padding:10px 0;">
+        <h2 style="color:#00c8ff !important; font-size:1.1rem; margin-bottom:16px;">⚡ HOW IT WORKS</h2>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("""
+    **1.** Paste the job description
+    **2.** Click **Customize Resume**
+    **3.** Download your tailored PDF
 
-# ============ MAIN APP ============
-col1, col2 = st.columns([1, 1])
+    ---
+    **Protected (hardcoded):**
+    - Military service section
+    - Project titles & links
+    - Job titles & dates
+
+    ---
+    *These are locked to prevent AI hallucinations and protect PDF formatting.*
+    """)
+    st.markdown("---")
+    st.markdown("<p style='color:#2a4a70; font-size:11px;'>Model: Llama 3.3 70B via Groq</p>", unsafe_allow_html=True)
+
+# ============ MAIN LAYOUT ============
+col1, col2 = st.columns([1, 1], gap="medium")
 
 with col1:
-    st.subheader("📝 Job Description")
+    st.markdown("### 📋 Job Description")
     job_description = st.text_area(
-        "Paste the job description here:",
-        height=300,
-        placeholder="Copy-paste the entire job posting...",
-        key="jd_input"
+        "Paste the full job posting here:",
+        height=320,
+        placeholder="Copy-paste the entire job description...\n\nThe AI will extract ATS keywords and tailor every section to this role.",
+        key="jd_input",
+        label_visibility="collapsed"
     )
 
 with col2:
-    st.subheader("👤 Your Fact Sheet")
-    st.info("✅ Hardcoded to prevent AI hallucinations")
-    st.text_area(
-        "Your data (read-only):",
-        value=FACT_SHEET,
-        height=220,
-        disabled=True,
-        key="fact_sheet"
-    )
+    st.markdown("### 🎓 Courses Pool")
     courses_input = st.text_area(
-        "📚 Courses you allow the AI to choose from (comma separated):",
+        "Courses the AI can select from (comma separated):",
         value="Introduction to Computing with Python (100), Biological Fluid Mechanics (100), Physics 1M (100), Differential and Integral Calculus 1M2 (99), Directions in Biomedical Engineering (97), Introduction to Human Anatomy (97), Partial Differential Equations/T (96), Physical Chemistry 1B (96), Fundamentals of Medical Materials (96), Metabolic Pathways (96), Physics 2 (95), From Cells to Tissues (94), Introduction to Probability H (93), General Chemistry (92), Laboratory in Bio-Medical Engineering 1 (92), Body Systems Physiology for Engineers (92), Signals and Systems (91)",
-        height=70,
-        key="courses_input"
+        height=320,
+        key="courses_input",
+        label_visibility="collapsed"
     )
 
-st.markdown("---")
+st.markdown("<br>", unsafe_allow_html=True)
 
-# ============ כפתור בדיקה ללא טוקנים ============
-st.subheader("🧪 Debugging Area")
-if st.button("בדיקת PDF עם נתוני דמי (חוסך זמן)", use_container_width=True):
-    mock_data = {
-        "CAREER_OBJECTIVE": "Test objective for PDF generation.",
-        "KEY_COURSES": "Python programming (100), Signals and Systems (91)",
-        "PROJECTS_SECTION": build_projects_latex([
-            {"id": "MRAI", "bullets": ["Mock MRAI Bullet 1", "Mock MRAI Bullet 2"]},
-            {"id": "XRAY", "bullets": ["Mock XRAY Bullet 1", "Mock XRAY Bullet 2"]}
-        ]),
-        "EXPERIENCE_SECTION": build_experience_latex(["Mock Experience Bullet 1"]),
-        "SKILLS_SECTION": build_skills_latex({"Technical": "Python, LaTeX", "Soft Skills": "Teamwork"})
-    }
-    st.session_state.analysis = "This is a mock analysis text."
-    st.session_state.generated_sections = mock_data
-    st.success("✅ נתוני דמי נטענו! עכשיו אפשר ללחוץ על 'Generate PDF Resume' למטה.")
+# ============ DEBUG BUTTON ============
+with st.expander("🧪 Debug — Test PDF without AI tokens", expanded=False):
+    if st.button("Load mock data & test PDF pipeline", use_container_width=True):
+        mock_data = {
+            "CAREER_OBJECTIVE": "Test objective for PDF generation.",
+            "KEY_COURSES": "Python programming (100), Signals and Systems (91)",
+            "PROJECTS_SECTION": build_projects_latex([
+                {"id": "MRAI", "bullets": ["Mock MRAI Bullet 1", "Mock MRAI Bullet 2"]},
+                {"id": "XRAY", "bullets": ["Mock XRAY Bullet 1", "Mock XRAY Bullet 2"]}
+            ]),
+            "EXPERIENCE_SECTION": build_experience_latex(["Mock Experience Bullet 1"]),
+            "SKILLS_SECTION": build_skills_latex({"Technical": "Python, LaTeX", "Soft Skills": "Teamwork"})
+        }
+        st.session_state.analysis = "This is a mock analysis text."
+        st.session_state.generated_sections = mock_data
+        st.success("✅ Mock data loaded — now click Generate PDF below.")
 
-st.markdown("---")
+st.markdown("<hr>", unsafe_allow_html=True)
 
 # ============ CUSTOMIZE BUTTON ============
-if st.button("🚀 Customize Resume", key="customize_btn", use_container_width=True):
+if st.button("⚡  CUSTOMIZE RESUME", key="customize_btn", use_container_width=True):
     if not job_description.strip():
-        st.error("❌ אנא הכנס תיאור משרה קודם!")
+        st.error("Paste a job description first.")
     else:
-        st.info("⏳ מנוע Llama 3.3 (Groq) מנתח את המשרה ומשכתב את קורות החיים...")
+        st.info("Analyzing JD and rewriting your resume with Llama 3.3 via Groq...")
         
         try:
             allowed_courses = [c.strip() for c in courses_input.split(",") if c.strip()]
@@ -363,30 +522,34 @@ Rules:
 - Never invent or rename courses
 
 STEP 5 — PROJECT SELECTION & BULLETS:
-Select EXACTLY 2 project IDs most relevant to the JD (choose from: "MRAI", "XRAY", "MECH").
-All technical facts are in the Fact Sheet above — use them as raw material. Do NOT invent.
+Available projects: "MRAI", "XRAY", "MECH". Select EXACTLY 2 most relevant to the JD.
 
-For each project write EXACTLY 3 bullets using this quality standard:
-- Format: Strong Action Verb + specific technical detail (method/tool/algorithm) + outcome or impact
-- Pull in EXACT keywords from the JD naturally
-- Be specific: name the algorithm, the library, the mechanism — not vague descriptions
-- NEVER invent tools, results, or metrics not present in the Fact Sheet
+PROJECT-TO-DOMAIN MATCHING GUIDE (follow this strictly):
+- JD mentions mechanical / machinery / manufacturing / CAD / SolidWorks / assembly / production / tolerance / machine design / mechatronics → MECH is your FIRST choice
+- JD mentions AI / machine learning / deep learning / medical imaging / DICOM / segmentation / neural network / image processing → MRAI is your first choice
+- JD mentions robotics / automation / computer vision / embedded / real-time / sensors / positioning / motion control → XRAY is your first choice
+- When two domains overlap, pick the best two. NEVER default to MRAI+XRAY just because they seem more impressive — match the JD domain.
 
-FEW-SHOT EXAMPLES (study these — this is the quality level required):
+For each selected project write EXACTLY 3 bullets:
+- Max 22 words per bullet
+- Format: Strong Action Verb + specific technical detail (tool/algorithm/mechanism) + outcome
+- Embed exact JD keywords naturally
+- NEVER invent tools, metrics, or results not in the Fact Sheet
 
-❌ WEAK bullet: "Implemented a U-Net model for tumor detection."
-✅ STRONG bullet: "Engineered a 3D U-Net (PyTorch/fastai) for automated brain tumor segmentation, producing confidence scores, Z-slice tumor range, and a 3D binary mask with centroid coordinates."
+FEW-SHOT QUALITY STANDARD (imitate this level of specificity):
 
-❌ WEAK bullet: "Built a system for X-ray targeting using computer vision."
-✅ STRONG bullet: "Designed a 4-state visual servoing pipeline (IDLE→MACRO→MICRO→READY) using MediaPipe PoseLandmarker and OpenCV, achieving ±20px centering precision on 13 anatomical targets."
+❌ WEAK: "Implemented a U-Net model for tumor detection."
+✅ STRONG: "Engineered a 3D U-Net (PyTorch/fastai) for automated brain tumor segmentation, outputting confidence score, Z-slice range, and 3D binary mask."
 
-❌ WEAK bullet: "Built a SharePoint site for the team."
-✅ STRONG bullet: "Initiated and deployed a team-wide SharePoint knowledge base from scratch, consolidating operational protocols and reducing cross-shift information loss."
+❌ WEAK: "Built a system for X-ray targeting using computer vision."
+✅ STRONG: "Designed a 4-state visual servoing pipeline (IDLE→MACRO→MICRO→READY) using MediaPipe and OpenCV, achieving ±20px anatomical centering precision."
 
-STEP 6 — EXPERIENCE BULLETS (Redefinemeat):
-Write 2-3 bullets for the 3D Printer Operator role, reframed to highlight skills relevant to the JD.
-Use the 4 achievement facts in the Fact Sheet — reframe, combine, or emphasize as needed.
-Same quality standard as above: specific, action-oriented, no hallucination.
+❌ WEAK: "Designed a mechanical hand in SolidWorks."
+✅ STRONG: "Modeled a multi-articulated mechanical hand in SolidWorks, mimicking anatomical joint kinematics, with full tolerance analysis and assembly files for 3D printing."
+
+STEP 6 — EXPERIENCE BULLETS (Redefinemeat, EXACTLY 2 bullets, max 20 words each):
+Reframe the 3D Printer Operator role to match this JD's domain.
+Use the 4 achievement facts in the Fact Sheet. Same quality standard: specific, action-oriented, no hallucination.
 
 STEP 7 — SKILLS:
 Group into exactly 2 categories:
@@ -453,6 +616,22 @@ Return ONLY a raw JSON object with these exact keys:
             else:
                 data = json.loads(raw_text)
             
+            # ── One-page content trimmer ──────────────────────────────
+            def trim_words(text, max_words):
+                words = text.split()
+                return " ".join(words[:max_words]) + ("..." if len(words) > max_words else "")
+
+            def trim_bullets(bullets, max_bullets, max_words_each):
+                return [trim_words(b, max_words_each) for b in bullets[:max_bullets]]
+
+            raw_projects = data.get("SELECTED_PROJECTS", [])
+            for proj in raw_projects:
+                proj["bullets"] = trim_bullets(proj.get("bullets", []), 3, 22)
+
+            raw_exp = trim_bullets(data.get("EXPERIENCE_BULLETS", []), 2, 20)
+            raw_objective = trim_words(data.get("CAREER_OBJECTIVE", ""), 75)
+            # ─────────────────────────────────────────────────────────
+
             validated_courses = select_valid_courses(data.get("KEY_COURSES", ""), allowed_courses, max_courses=3)
             st.session_state.analysis = data.get("ANALYSIS_TEXT", "לא נוצר ניתוח.")
             st.session_state.keywords_used = data.get("JD_KEYWORDS_USED", [])
@@ -460,10 +639,10 @@ Return ONLY a raw JSON object with these exact keys:
             st.session_state.ats_before = data.get("ATS_SCORE_BEFORE", "N/A")
             st.session_state.ats_after = data.get("ATS_SCORE_AFTER", "N/A")
             st.session_state.generated_sections = {
-                "CAREER_OBJECTIVE": escape_latex(data.get("CAREER_OBJECTIVE", "")),
+                "CAREER_OBJECTIVE": escape_latex(raw_objective),
                 "KEY_COURSES": escape_latex(validated_courses),
-                "PROJECTS_SECTION": build_projects_latex(data.get("SELECTED_PROJECTS", [])),
-                "EXPERIENCE_SECTION": build_experience_latex(data.get("EXPERIENCE_BULLETS", [])),
+                "PROJECTS_SECTION": build_projects_latex(raw_projects),
+                "EXPERIENCE_SECTION": build_experience_latex(raw_exp),
                 "SKILLS_SECTION": build_skills_latex(data.get("SKILLS", {}))
             }
 
@@ -474,101 +653,92 @@ Return ONLY a raw JSON object with these exact keys:
 
 # ============ DISPLAY ANALYSIS ============
 if "analysis" in st.session_state:
-    st.markdown("---")
+    st.markdown("<hr>", unsafe_allow_html=True)
 
     # ATS Score Banner
     if "ats_before" in st.session_state and "ats_after" in st.session_state:
         ats_before = st.session_state.ats_before
         ats_after = st.session_state.ats_after
+        st.markdown("### 📊 ATS Score")
         col_a, col_b = st.columns(2)
-        col_a.metric("ATS Score — Before", f"{ats_before}/100")
-        col_b.metric("ATS Score — After", f"{ats_after}/100",
+        col_a.metric("Before Customization", f"{ats_before} / 100")
+        col_b.metric("After Customization", f"{ats_after} / 100",
                      delta=f"+{ats_after - ats_before}" if isinstance(ats_after, int) and isinstance(ats_before, int) else None)
+        st.markdown("<br>", unsafe_allow_html=True)
 
-    with st.expander("🧐 Professional Analysis & Match Score", expanded=True):
+    with st.expander("🧠 Full ATS Analysis & Match Report", expanded=True):
         st.markdown(st.session_state.analysis)
 
-if "keywords_used" in st.session_state:
-    with st.expander("🏷️ JD Keywords inserted into resume", expanded=False):
-        keywords = st.session_state.keywords_used
-        if keywords:
-            st.markdown("**Keywords embedded from JD:**")
-            st.markdown("  ".join([f"`{str(k)}`" for k in keywords]))
-        else:
-            st.warning("No keywords were reported by the model for this run.")
+    kw_col, gap_col = st.columns(2)
+    with kw_col:
+        with st.expander("✅ Keywords embedded", expanded=False):
+            keywords = st.session_state.get("keywords_used", [])
+            if keywords:
+                st.markdown("  ".join([f"`{k}`" for k in keywords]))
+            else:
+                st.caption("None reported.")
+    with gap_col:
+        with st.expander("⚠️ Keyword gaps", expanded=False):
+            missing = st.session_state.get("missing_keywords", [])
+            if missing:
+                st.markdown("  ".join([f"`{k}`" for k in missing]))
+            else:
+                st.success("No major gaps.")
 
-if "missing_keywords" in st.session_state:
-    with st.expander("⚠️ Missing Keywords (gaps vs JD)", expanded=False):
-        missing = st.session_state.missing_keywords
-        if missing:
-            st.markdown("**Keywords in JD that could not be naturally embedded:**")
-            st.markdown("  ".join([f"`{str(k)}`" for k in missing]))
-        else:
-            st.success("No major keyword gaps detected.")
-
-# ============ DISPLAY & GENERATE PDF ============
+# ============ RESUME PREVIEW + PDF ============
 if "generated_sections" in st.session_state:
-    st.markdown("---")
-    st.subheader("📄 Customized Resume Preview")
-    
+    st.markdown("<hr>", unsafe_allow_html=True)
+    st.markdown("### 📄 Resume Preview")
+
     sections_display = {
         "CAREER_OBJECTIVE": "Career Objective",
         "KEY_COURSES": "Selected Courses",
-        "PROJECTS_SECTION": "Projects (Protected Links)",
-        "EXPERIENCE_SECTION": "Professional Experience (Protected Title)",
+        "PROJECTS_SECTION": "Projects (links locked)",
+        "EXPERIENCE_SECTION": "Professional Experience (title locked)",
         "SKILLS_SECTION": "Skills"
     }
-    
     for section_key, section_title in sections_display.items():
-        with st.expander(f"✏️ {section_title}"):
-            st.markdown("**LaTeX Code:**")
-            section_content = st.session_state.generated_sections.get(section_key, "")
-            st.code(section_content, language="latex")
-    
-    st.markdown("---")
-    
-    # ============ PDF GENERATION ============
-    if st.button("📥 Generate PDF Resume", key="generate_pdf", use_container_width=True):
-        try:
-            latex_content = LATEX_TEMPLATE
-            
-            for section_key, section_content in st.session_state.generated_sections.items():
-                placeholder = f"{{{{{section_key}}}}}"
-                # אנחנו לא עושים escape_latex פה כי זה כבר נעשה בפונקציות הבנייה
-                latex_content = latex_content.replace(placeholder, section_content)
-            
-            with tempfile.TemporaryDirectory() as tmpdir:
-                tex_file = Path(tmpdir) / "resume.tex"
-                pdf_file = Path(tmpdir) / "resume.pdf"
-                
-                with open(tex_file, "w", encoding="utf-8") as f:
-                    f.write(latex_content)
-                
-                result = subprocess.run(
-                    ["pdflatex", "-interaction=nonstopmode", "-output-directory", tmpdir, str(tex_file)],
-                    capture_output=True,
-                    timeout=120
-                )
-                
-                if result.returncode != 0:
-                    st.error("❌ PDF compilation failed!")
-                    st.error("Make sure pdflatex is installed and added to PATH.")
-                    st.text_area("LaTeX Output:", value=result.stdout.decode('utf-8', errors='ignore'), height=200)
-                else:
-                    with open(pdf_file, "rb") as f:
-                        pdf_data = f.read()
-                    
-                    st.success("✅ PDF generated successfully!")
-                    st.download_button(
-                        label="⬇️ Download Resume.pdf",
-                        data=pdf_data,
-                        file_name="Tair_Fridman_Resume.pdf",
-                        mime="application/pdf",
-                        use_container_width=True
-                    )
-                    
-        except Exception as e:
-            st.error(f"❌ Error generating PDF: {str(e)}")
+        with st.expander(f"✏️ {section_title}", expanded=False):
+            st.code(st.session_state.generated_sections.get(section_key, ""), language="latex")
 
-st.markdown("---")
-st.caption("🔐 Powered by Groq. Core structures are hardcoded to prevent AI hallucinations.")
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    if st.button("📥  GENERATE PDF", key="generate_pdf", use_container_width=True):
+        with st.spinner("Compiling LaTeX..."):
+            try:
+                latex_content = LATEX_TEMPLATE
+                for section_key, section_content in st.session_state.generated_sections.items():
+                    latex_content = latex_content.replace(f"{{{{{section_key}}}}}", section_content)
+
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    tex_file = Path(tmpdir) / "resume.tex"
+                    pdf_file = Path(tmpdir) / "resume.pdf"
+                    with open(tex_file, "w", encoding="utf-8") as f:
+                        f.write(latex_content)
+                    result = subprocess.run(
+                        ["pdflatex", "-interaction=nonstopmode", "-output-directory", tmpdir, str(tex_file)],
+                        capture_output=True, timeout=120
+                    )
+                    if result.returncode != 0:
+                        st.error("PDF compilation failed — pdflatex error below.")
+                        st.text_area("LaTeX log:", value=result.stdout.decode("utf-8", errors="ignore"), height=200)
+                    else:
+                        with open(pdf_file, "rb") as f:
+                            pdf_data = f.read()
+                        st.success("PDF compiled successfully!")
+                        st.download_button(
+                            label="⬇️  Download Resume PDF",
+                            data=pdf_data,
+                            file_name="Tair_Fridman_Resume.pdf",
+                            mime="application/pdf",
+                            use_container_width=True
+                        )
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
+
+st.markdown("<hr>", unsafe_allow_html=True)
+st.markdown(
+    "<p style='text-align:center; color:#1e3a5f; font-size:12px;'>"
+    "⚡ CV.AI — Powered by Groq / Llama 3.3 · Core sections are hardcoded to prevent hallucinations"
+    "</p>", unsafe_allow_html=True
+)
