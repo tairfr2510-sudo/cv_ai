@@ -39,6 +39,9 @@ def build_projects_latex(selected_projects):
         },
         "XRAY": {
             "title": r"\textbf{Autonomous X-ray Targeting \& Positioning System} \hfill \href{https://aistudio.google.com/apps/e4bd7e56-afa3-41d2-984a-88577243b839?fullscreenApplet=true&showPreview=true&showAssistant=true}{\uline{Demo}}"
+        },
+        "MECH": {
+            "title": r"\textbf{Mechanical Hand Design \& Modeling (SolidWorks Project)}"
         }
     }
 
@@ -82,7 +85,7 @@ def normalize_course(course):
     return re.sub(r'\s+', ' ', course.strip().lower())
 
 
-def select_valid_courses(raw_courses, allowed_courses, max_courses=2):
+def select_valid_courses(raw_courses, allowed_courses, max_courses=3):
     requested = [c.strip() for c in raw_courses.split(',') if c.strip()]
     allowed_map = {normalize_course(c): c.strip() for c in allowed_courses}
     selected = []
@@ -100,18 +103,6 @@ def select_valid_courses(raw_courses, allowed_courses, max_courses=2):
                 break
 
     return ", ".join(selected[:max_courses])
-
-
-
-def build_generated_sections(data, validated_courses):
-    """Build structured LaTeX-safe sections in one place to avoid malformed inline dict edits."""
-    return {
-        "CAREER_OBJECTIVE": escape_latex(data.get("CAREER_OBJECTIVE", "")),
-        "KEY_COURSES": escape_latex(validated_courses),
-        "PROJECTS_SECTION": build_projects_latex(data.get("SELECTED_PROJECTS", [])),
-        "EXPERIENCE_SECTION": build_experience_latex(data.get("EXPERIENCE_BULLETS", [])),
-        "SKILLS_SECTION": build_skills_latex(data.get("SKILLS", {})),
-    }
 
 # ============ LOAD LATEX TEMPLATE ============
 LATEX_TEMPLATE = r"""\documentclass[11pt,a4paper,sans]{article}
@@ -319,46 +310,96 @@ if st.button("🚀 Customize Resume", key="customize_btn", use_container_width=T
             allowed_courses_text = ", ".join(allowed_courses)
 
             master_prompt = f"""
-            Act as a Senior Israeli Headhunter and ATS Expert.
-            Your task is to tailor the candidate's content to perfectly match the provided Job Description (JD).
+You are an expert resume writer and ATS optimization specialist.
+Your goal is to reorganize and improve a resume to match a specific job description — WITHOUT inventing experience that does not exist.
 
-            INPUTS:
-            - Job Description (JD): {job_description}
-            - Candidate Fact Sheet: {FACT_SHEET}
-            - Allowed Courses Pool (must select only from here): {allowed_courses_text}
+=== INPUTS ===
+Job Description (JD):
+{job_description}
 
-            INSTRUCTIONS:
-            1. ANALYSIS: Evaluate the match between the candidate and the JD.
-            2. CAREER OBJECTIVE: Write exactly 6 lines (max 100 words total) tailored to the JD. Do NOT hallucinate.
-            3. KEY COURSES: Select EXACTLY 2 relevant courses only from Allowed Courses Pool and keep the grade exactly as written (for example: 'Signals and Systems (91)'). Never invent courses
-            4. PROJECT SELECTION + BULLETS:
-               - Select EXACTLY 2 projects from this fixed list: ["MRAI", "XRAY", "Mechanical Hand Design & Modeling"].
-               - For each selected project write exactly 3-4 bullet points.
-               - For experience write exactly 2-3 bullet points.
-               - RULE: EVERY bullet MUST follow the 'Action + Impact + Result' formula.
-               - RULE: Embed EXACT keywords from the JD naturally. Do NOT invent metrics or fake experience.
-            5. SKILLS: Select and group the most relevant skills into 2 categories (e.g., "Technical", "Soft Skills")
-                - The soft skills you can take from the JD, the technical skills from what you know about me from the projects and experience.
+Candidate Fact Sheet (ground truth — do not invent beyond this):
+{FACT_SHEET}
 
-            OUTPUT FORMAT (JSON ONLY):
-            Return ONLY a raw JSON object. Do not use Markdown formatting (no ```json). 
-            Do NOT include any LaTeX commands (no \\textbf, no \\begin). Return pure plain text inside the JSON values.
-            
-            {{
-                "ANALYSIS_TEXT": "Markdown string with JD Breakdown, Match Score, Strengths, and Gaps.",
-                "CAREER_OBJECTIVE": "Plain text summary.",
-                "KEY_COURSES": "course1, course2",
-                "SELECTED_PROJECTS": [
-                    {{"id": "MRAI", "bullets": ["Bullet 1", "Bullet 2"]}},
-                    {{"id": "XRAY", "bullets": ["Bullet 1", "Bullet 2"]}}
-                ],
-                "EXPERIENCE_BULLETS": ["Bullet 1", "Bullet 2"],
-                "JD_KEYWORDS_USED": ["keyword1", "keyword2", "keyword3"],
-                "SKILLS": {{
-                    "Technical": "Python, SolidWorks...",
-                    "Soft Skills": "Analytical Thinking..."
-                }}
-            }}
+Allowed Courses Pool (select ONLY from this list):
+{allowed_courses_text}
+
+=== STEP-BY-STEP INSTRUCTIONS ===
+
+STEP 1 — JD ANALYSIS:
+Extract the top ATS keywords, required skills, and key responsibilities from the JD.
+Identify which of these the candidate already has, and which are gaps.
+
+STEP 2 — ATS SCORE BEFORE:
+Score the candidate's raw resume against the JD on a 0-100 scale. Be honest and realistic.
+
+STEP 3 — CAREER OBJECTIVE:
+Write a 5-6 line career objective (max 100 words) that:
+- Opens with the candidate's identity (Biomedical Engineering student, Technion)
+- Highlights the 2 most relevant projects for this JD
+- Embeds exact ATS keywords from the JD naturally
+- Uses industry-specific language (manufacturing / engineering / medical / software — match the JD's domain)
+- Is professional, concise, and does NOT hallucinate
+
+STEP 4 — KEY COURSES:
+Select 2 to 3 courses that are MOST relevant to the JD.
+Rules:
+- Select ONLY from the Allowed Courses Pool
+- Copy the exact course name and grade (e.g. 'Signals and Systems (91)')
+- Never invent or rename courses
+
+STEP 5 — PROJECT SELECTION & BULLETS:
+Available project IDs and their real content:
+- "MRAI": AI-Powered MRI/CT platform — Python, PyTorch, 3D U-Net tumor segmentation, DICOM/NIfTI, Marching Cubes 3D reconstruction, MPR tool.
+- "XRAY": Autonomous X-ray positioning system — Python, OpenCV, MediaPipe, NLP (Hebrew), state machine (Idle/Macro/Micro), real-time pose detection, CLAHE image enhancement.
+- "MECH": Mechanical hand design — SolidWorks, multi-articulated joint mechanism, tolerance analysis, assembly files for 3D printing.
+
+Select EXACTLY 2 project IDs most relevant to the JD.
+For each project write 3-4 bullets:
+- Format: Action Verb + specific technical action + measurable or professional impact
+- Embed exact JD keywords naturally
+- Use hands-on / production / engineering language where relevant
+- NEVER invent tools, metrics, or results not in the Fact Sheet
+
+STEP 6 — EXPERIENCE BULLETS (Redefinemeat):
+Write 2-3 bullets for the 3D Printer Operator role, reframed to highlight:
+- The skills most relevant to this specific JD
+- Hands-on technical work, troubleshooting, process optimization, cross-team collaboration
+- Use only real facts from the Fact Sheet. No hallucination.
+
+STEP 7 — SKILLS:
+Group into exactly 2 categories:
+- "Technical": list only tools/technologies confirmed by the projects and experience in the Fact Sheet. Add relevant JD keywords only if they map to real skills.
+- "Soft Skills": pick the most relevant traits from both the JD and the Fact Sheet.
+
+STEP 8 — ATS SCORE AFTER:
+Re-score the improved resume against the JD. Estimate the improvement.
+
+=== CRITICAL RULES ===
+- Do NOT invent experience, tools, metrics, or results
+- Do NOT add LaTeX commands (no \\textbf, \\begin, \\item etc.) — plain text only inside JSON values
+- Do NOT use Markdown formatting or ```json blocks
+
+=== OUTPUT FORMAT (JSON ONLY) ===
+Return ONLY a raw JSON object with these exact keys:
+
+{{
+    "ANALYSIS_TEXT": "Markdown-formatted string with: JD Keywords extracted, ATS Score Before (X/100), ATS Score After (Y/100), Strengths, Gaps, Missing Keywords list.",
+    "CAREER_OBJECTIVE": "Plain text, 5-6 lines.",
+    "KEY_COURSES": "course1 (grade), course2 (grade), course3 (grade)",
+    "SELECTED_PROJECTS": [
+        {{"id": "MRAI", "bullets": ["Bullet 1", "Bullet 2", "Bullet 3"]}},
+        {{"id": "XRAY", "bullets": ["Bullet 1", "Bullet 2", "Bullet 3"]}}
+    ],
+    "EXPERIENCE_BULLETS": ["Bullet 1", "Bullet 2", "Bullet 3"],
+    "JD_KEYWORDS_USED": ["keyword1", "keyword2", "keyword3"],
+    "MISSING_KEYWORDS": ["keyword1", "keyword2"],
+    "ATS_SCORE_BEFORE": 65,
+    "ATS_SCORE_AFTER": 82,
+    "SKILLS": {{
+        "Technical": "Python, SolidWorks...",
+        "Soft Skills": "Analytical Thinking..."
+    }}
+}}
             """
 
             chat_completion = client.chat.completions.create(
@@ -381,21 +422,20 @@ if st.button("🚀 Customize Resume", key="customize_btn", use_container_width=T
             else:
                 data = json.loads(raw_text)
             
-            # הרכבה בטוחה של ה-LaTeX (הסוף לקריסות!)
+            validated_courses = select_valid_courses(data.get("KEY_COURSES", ""), allowed_courses, max_courses=3)
             st.session_state.analysis = data.get("ANALYSIS_TEXT", "לא נוצר ניתוח.")
-            validated_courses = select_valid_courses(data.get("KEY_COURSES", ""), allowed_courses)
             st.session_state.keywords_used = data.get("JD_KEYWORDS_USED", [])
+            st.session_state.missing_keywords = data.get("MISSING_KEYWORDS", [])
+            st.session_state.ats_before = data.get("ATS_SCORE_BEFORE", "N/A")
+            st.session_state.ats_after = data.get("ATS_SCORE_AFTER", "N/A")
             st.session_state.generated_sections = {
                 "CAREER_OBJECTIVE": escape_latex(data.get("CAREER_OBJECTIVE", "")),
-                "KEY_COURSES": escape_latex(validated_courses)}
-            st.session_state.generated_sections = {
-                "CAREER_OBJECTIVE": escape_latex(data.get("CAREER_OBJECTIVE", "")),
-                "KEY_COURSES": escape_latex(data.get("KEY_COURSES", "")),
+                "KEY_COURSES": escape_latex(validated_courses),
                 "PROJECTS_SECTION": build_projects_latex(data.get("SELECTED_PROJECTS", [])),
                 "EXPERIENCE_SECTION": build_experience_latex(data.get("EXPERIENCE_BULLETS", [])),
                 "SKILLS_SECTION": build_skills_latex(data.get("SKILLS", {}))
-             }
-            
+            }
+
             st.success("✅ הניתוח והשכתוב הושלמו בהצלחה ובמהירות האור!")
             
         except Exception as e:
@@ -404,17 +444,36 @@ if st.button("🚀 Customize Resume", key="customize_btn", use_container_width=T
 # ============ DISPLAY ANALYSIS ============
 if "analysis" in st.session_state:
     st.markdown("---")
+
+    # ATS Score Banner
+    if "ats_before" in st.session_state and "ats_after" in st.session_state:
+        ats_before = st.session_state.ats_before
+        ats_after = st.session_state.ats_after
+        col_a, col_b = st.columns(2)
+        col_a.metric("ATS Score — Before", f"{ats_before}/100")
+        col_b.metric("ATS Score — After", f"{ats_after}/100",
+                     delta=f"+{ats_after - ats_before}" if isinstance(ats_after, int) and isinstance(ats_before, int) else None)
+
     with st.expander("🧐 Professional Analysis & Match Score", expanded=True):
         st.markdown(st.session_state.analysis)
 
 if "keywords_used" in st.session_state:
-    with st.expander("🏷️ JD Keywords inserted into resume", expanded=True):
+    with st.expander("🏷️ JD Keywords inserted into resume", expanded=False):
         keywords = st.session_state.keywords_used
         if keywords:
-            st.markdown("**Keywords used exactly from JD:**")
-            st.markdown("\n".join([f"- `{escape_latex(str(k))}`" for k in keywords]))
+            st.markdown("**Keywords embedded from JD:**")
+            st.markdown("  ".join([f"`{str(k)}`" for k in keywords]))
         else:
             st.warning("No keywords were reported by the model for this run.")
+
+if "missing_keywords" in st.session_state:
+    with st.expander("⚠️ Missing Keywords (gaps vs JD)", expanded=False):
+        missing = st.session_state.missing_keywords
+        if missing:
+            st.markdown("**Keywords in JD that could not be naturally embedded:**")
+            st.markdown("  ".join([f"`{str(k)}`" for k in missing]))
+        else:
+            st.success("No major keyword gaps detected.")
 
 # ============ DISPLAY & GENERATE PDF ============
 if "generated_sections" in st.session_state:
