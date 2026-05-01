@@ -189,6 +189,10 @@ FACT_SHEET = """
    - Mechanism: Developed a Python-based state machine (Idle, Macro Move, Micro Center) for precise motion control.
    - Features: Real-time pose detection, dynamic 3x auto-zooming, moving crosshair alignment, and image enhancement (CLAHE).
 
+3. Mechanical Hand Design & Modeling (SolidWorks Project)
+    - Designed a multi-articulated mechanical hand mechanism using SolidWorks, focusing on mimicking anatomical joint movements.
+    -Performed tolerance analysis and created detailed assembly files for potential 3D printing manufacturing.
+
 [SKILLS]
 - Technical: Python, PyTorch, OpenCV, MediaPipe, NLP, SolidWorks, MATLAB, Excel, SharePoint.
 - Soft Skills: Analytical Thinking, Quick Learner, Team Leadership, Problem Solving.
