@@ -377,14 +377,14 @@ if st.button("🚀 Customize Resume", key="customize_btn", use_container_width=T
             st.session_state.keywords_used = data.get("JD_KEYWORDS_USED", [])
             st.session_state.generated_sections = {
                 "CAREER_OBJECTIVE": escape_latex(data.get("CAREER_OBJECTIVE", "")),
-                "KEY_COURSES": escape_latex(validated_courses),
+                "KEY_COURSES": escape_latex(validated_courses)}
             st.session_state.generated_sections = {
                 "CAREER_OBJECTIVE": escape_latex(data.get("CAREER_OBJECTIVE", "")),
                 "KEY_COURSES": escape_latex(data.get("KEY_COURSES", "")),
                 "PROJECTS_SECTION": build_projects_latex(data.get("SELECTED_PROJECTS", [])),
                 "EXPERIENCE_SECTION": build_experience_latex(data.get("EXPERIENCE_BULLETS", [])),
                 "SKILLS_SECTION": build_skills_latex(data.get("SKILLS", {}))
-            }
+             }
             
             st.success("✅ הניתוח והשכתוב הושלמו בהצלחה ובמהירות האור!")
             
