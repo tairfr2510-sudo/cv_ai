@@ -226,6 +226,10 @@ FACT_SHEET = """
    - Mechanism: Developed a Python-based state machine (Idle, Macro Move, Micro Center) for precise motion control.
    - Features: Real-time pose detection, dynamic 3x auto-zooming, moving crosshair alignment, and image enhancement (CLAHE).
 
+3. Mechanical Hand Design & Modeling (SolidWorks Project)
+    - Designed a multi-articulated mechanical hand mechanism using SolidWorks, focusing on mimicking anatomical joint movements.
+    -Performed tolerance analysis and created detailed assembly files for potential 3D printing manufacturing.
+
 [SKILLS]
 - Technical: Python, PyTorch, OpenCV, MediaPipe, NLP, SolidWorks, MATLAB, Excel, SharePoint.
 - Soft Skills: Analytical Thinking, Quick Learner, Team Leadership, Problem Solving.
@@ -277,7 +281,7 @@ with col2:
     )
     courses_input = st.text_area(
         "📚 Courses you allow the AI to choose from (comma separated):",
-        value="Python Programming (100), Biological Fluid Mechanics (100), Signals and Systems (91)",
+        value="Introduction to Computing with Python (100), Biological Fluid Mechanics (100), Physics 1M (100), Differential and Integral Calculus 1M2 (99), Directions in Biomedical Engineering (97), Introduction to Human Anatomy (97), Partial Differential Equations/T (96), Physical Chemistry 1B (96), Fundamentals of Medical Materials (96), Metabolic Pathways (96), Physics 2 (95), From Cells to Tissues (94), Introduction to Probability H (93), General Chemistry (92), Laboratory in Bio-Medical Engineering 1 (92), Body Systems Physiology for Engineers (92), Signals and Systems (91)",
         height=70,
         key="courses_input"
     )
@@ -324,37 +328,24 @@ if st.button("🚀 Customize Resume", key="customize_btn", use_container_width=T
             - Allowed Courses Pool (must select only from here): {allowed_courses_text}
 
             INSTRUCTIONS:
-            1. Analyze the JD and extract ATS-oriented requirements: role keywords, tools, domain terms, and practical expectations.
-            2. Analyze the candidate fact sheet and identify:
-               - current strengths relevant to the JD,
-               - realistic gaps (without inventing any experience),
-               - missing JD keywords.
-            3. Rewrite the resume content while preserving the current resume structure and fixed links/titles.
-            4. Use an industry-focused tone (Manufacturing / Engineering / QA / Medical-Tech when relevant).
-            5. Emphasize practical hands-on experience, troubleshooting, production/process thinking where truthful.
-            6. Never invent experience, responsibilities, metrics, or tools not grounded in the fact sheet.
-            7. CAREER OBJECTIVE: exactly 3 lines (max 60 words total), concise and professional.
-            8. KEY COURSES: select EXACTLY 2 relevant courses only from Allowed Courses Pool and preserve grades exactly.
-            9. PROJECTS + EXPERIENCE BULLETS:
-               - Select EXACTLY 2 projects from ["MRAI", "XRAY"].
-               - Each selected project: 2-3 bullets.
-               - Experience section: 2-3 bullets.
-               - Every bullet must follow Action + Impact + Result.
-               - Naturally embed exact JD keywords where true.
-            10. SKILLS: return 2 focused categories only:
-               - Technical Skills
-               - Engineering Skills
-            11. ATS SCORING: Provide ATS_SCORE_BEFORE and ATS_SCORE_AFTER as integers (0-100).
+            1. ANALYSIS: Evaluate the match between the candidate and the JD.
+            2. CAREER OBJECTIVE: Write exactly 6 lines (max 100 words total) tailored to the JD. Do NOT hallucinate.
+            3. KEY COURSES: Select EXACTLY 2 relevant courses only from Allowed Courses Pool and keep the grade exactly as written (for example: 'Signals and Systems (91)'). Never invent courses
+            4. PROJECT SELECTION + BULLETS:
+               - Select EXACTLY 2 projects from this fixed list: ["MRAI", "XRAY", "Mechanical Hand Design & Modeling"].
+               - For each selected project write exactly 3-4 bullet points.
+               - For experience write exactly 2-3 bullet points.
+               - RULE: EVERY bullet MUST follow the 'Action + Impact + Result' formula.
+               - RULE: Embed EXACT keywords from the JD naturally. Do NOT invent metrics or fake experience.
+            5. SKILLS: Select and group the most relevant skills into 2 categories (e.g., "Technical", "Soft Skills")
+                - The soft skills you can take from the JD, the technical skills from what you know about me from the projects and experience.
 
             OUTPUT FORMAT (JSON ONLY):
             Return ONLY a raw JSON object. Do not use Markdown formatting (no ```json). 
             Do NOT include any LaTeX commands (no \\textbf, no \\begin). Return pure plain text inside the JSON values.
             
             {{
-                "ANALYSIS_TEXT": "Markdown string with JD breakdown, strengths, realistic gaps, and why the rewrite matches ATS.",
-                "ATS_SCORE_BEFORE": 0,
-                "ATS_SCORE_AFTER": 0,
-                "MISSING_KEYWORDS": ["keyword_a", "keyword_b"],
+                "ANALYSIS_TEXT": "Markdown string with JD Breakdown, Match Score, Strengths, and Gaps.",
                 "CAREER_OBJECTIVE": "Plain text summary.",
                 "KEY_COURSES": "course1, course2",
                 "SELECTED_PROJECTS": [
@@ -394,11 +385,16 @@ if st.button("🚀 Customize Resume", key="customize_btn", use_container_width=T
             st.session_state.analysis = data.get("ANALYSIS_TEXT", "לא נוצר ניתוח.")
             validated_courses = select_valid_courses(data.get("KEY_COURSES", ""), allowed_courses)
             st.session_state.keywords_used = data.get("JD_KEYWORDS_USED", [])
-            st.session_state.missing_keywords = data.get("MISSING_KEYWORDS", [])
-            ats_before = data.get("ATS_SCORE_BEFORE", "N/A")
-            ats_after = data.get("ATS_SCORE_AFTER", "N/A")
-            st.session_state.ats_summary = f"**ATS Score Before:** {ats_before}\n\n**ATS Score After:** {ats_after}"
-            st.session_state.generated_sections = build_generated_sections(data, validated_courses)
+            st.session_state.generated_sections = {
+                "CAREER_OBJECTIVE": escape_latex(data.get("CAREER_OBJECTIVE", "")),
+                "KEY_COURSES": escape_latex(validated_courses)}
+            st.session_state.generated_sections = {
+                "CAREER_OBJECTIVE": escape_latex(data.get("CAREER_OBJECTIVE", "")),
+                "KEY_COURSES": escape_latex(data.get("KEY_COURSES", "")),
+                "PROJECTS_SECTION": build_projects_latex(data.get("SELECTED_PROJECTS", [])),
+                "EXPERIENCE_SECTION": build_experience_latex(data.get("EXPERIENCE_BULLETS", [])),
+                "SKILLS_SECTION": build_skills_latex(data.get("SKILLS", {}))
+             }
             
             st.success("✅ הניתוח והשכתוב הושלמו בהצלחה ובמהירות האור!")
             
@@ -419,19 +415,6 @@ if "keywords_used" in st.session_state:
             st.markdown("\n".join([f"- `{escape_latex(str(k))}`" for k in keywords]))
         else:
             st.warning("No keywords were reported by the model for this run.")
-
-if "ats_summary" in st.session_state:
-    with st.expander("📈 ATS Score Comparison", expanded=True):
-        st.markdown(st.session_state.ats_summary)
-
-if "missing_keywords" in st.session_state:
-    with st.expander("🧩 Missing JD Keywords", expanded=True):
-        missing = st.session_state.missing_keywords
-        if missing:
-            st.markdown("\n".join([f"- `{escape_latex(str(k))}`" for k in missing]))
-        else:
-            st.success("No missing keywords were reported.")
-
 
 # ============ DISPLAY & GENERATE PDF ============
 if "generated_sections" in st.session_state:
