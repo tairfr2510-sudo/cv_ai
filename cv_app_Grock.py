@@ -333,7 +333,7 @@ STEP 2 — ATS SCORE BEFORE:
 Score the candidate's raw resume against the JD on a 0-100 scale. Be honest and realistic.
 
 STEP 3 — CAREER OBJECTIVE:
-Write a 5-6 line career objective (max 100 words) that:
+Write a 5-6 line career objective (max 80 words) that:
 - Opens with the candidate's identity (Biomedical Engineering student, Technion)
 - Highlights the 2 most relevant projects for this JD
 - Embeds exact ATS keywords from the JD naturally
