@@ -110,18 +110,18 @@ LATEX_TEMPLATE = r"""\documentclass[11pt,a4paper,sans]{article}
 % Packages
 \usepackage{ulem}
 \usepackage[utf8]{inputenc}
-\usepackage[left=0.65in,top=0.45in,right=0.65in,bottom=0.45in]{geometry}
+\usepackage[left=0.7in,top=0.55in,right=0.7in,bottom=0.55in]{geometry}
 \usepackage{titlesec}
 \usepackage{enumitem}
 \usepackage{hyperref}
 \usepackage{xcolor}
 
 % Global list tightening
-\setlist[itemize]{noitemsep, topsep=1pt, parsep=0pt, partopsep=0pt}
+\setlist[itemize]{noitemsep, topsep=2pt, parsep=0pt, partopsep=0pt}
 
 % Section formatting
 \titleformat{\section}{\large\bfseries\uppercase}{}{0pt}{}[\titlerule]
-\titlespacing{\section}{0pt}{5pt}{2pt}
+\titlespacing{\section}{0pt}{8pt}{3pt}
 
 \begin{document}
 \pagestyle{empty}
@@ -321,11 +321,12 @@ STEP 1 — ATS ANALYSIS:
 - Identify which the candidate has (strengths) and which are gaps.
 - Score the raw resume vs. JD: ATS_SCORE_BEFORE (0-100).
 
-STEP 2 — CAREER OBJECTIVE (strict length: 3-4 sentences, MAX 80 words):
-- Sentence 1: Who the candidate is + most relevant degree/institution.
-- Sentence 2-3: The 2 most relevant projects, with JD-specific vocabulary.
-- Sentence 4: What value the candidate brings to this role.
-- Use powerful industry language. No filler phrases. No hallucination.
+STEP 2 — CAREER OBJECTIVE (4-5 sentences, 75-90 words):
+- Sentence 1: Who the candidate is + degree + institution.
+- Sentence 2: Highlight the most relevant project with specific technical detail.
+- Sentence 3: Highlight the second relevant project or academic strength.
+- Sentence 4-5: What skills/value the candidate brings to this exact role, using the JD's own language.
+- Be specific and detailed. Use industry vocabulary. No generic filler. No hallucination.
 
 STEP 3 — KEY COURSES (select 2-3, ONLY from Allowed Courses Pool):
 - Pick the most relevant to the JD.
@@ -339,17 +340,17 @@ Project facts:
 - MECH: SolidWorks, multi-articulated mechanical hand, anatomical joint mimicry, tolerance analysis, assembly for 3D printing.
 
 For each selected project write EXACTLY 3 bullets (no more, no less):
-- Max 22 words per bullet.
-- Format: Strong Action Verb + technical detail + impact/outcome.
-- Embed JD keywords naturally. Use industry vocabulary.
-- Imply skills strongly (e.g. "engineered", "deployed", "optimized" are fine for real work).
-- NEVER invent tools or results not in the facts above.
+- Each bullet: 20-30 words. Rich enough to show real technical depth.
+- Format: Strong Action Verb + specific technical method/tool + concrete outcome or impact.
+- Embed JD keywords naturally. Use the vocabulary of the JD's industry.
+- You may use strong professional framing (e.g. "engineered", "deployed", "optimized") for real work.
+- NEVER invent tools, metrics, or results that are not in the facts above.
 
-STEP 5 — EXPERIENCE (Redefinemeat, EXACTLY 2 bullets):
-- Max 20 words per bullet.
-- Reframe the 3D Printer Operator role to highlight what is most relevant to this JD.
-- Allowed: process optimization, cross-functional collaboration, troubleshooting, data tracking, R&D support, protocol development.
-- Strong language is encouraged. No invented facts.
+STEP 5 — EXPERIENCE (Redefinemeat, 2-3 bullets):
+- Each bullet: 18-25 words.
+- Reframe the 3D Printer Operator role to highlight skills most relevant to this JD.
+- Draw from: process optimization, troubleshooting, R&D collaboration, protocol development, data tracking, SharePoint/Excel systems.
+- Strong professional language is encouraged. Stick to real facts.
 
 STEP 6 — SKILLS (exactly 2 categories: "Technical" and "Soft Skills"):
 - Technical: tools/technologies from projects + experience. Add JD-relevant terms only if genuinely implied.
@@ -368,13 +369,13 @@ Re-score the improved resume vs. JD (ATS_SCORE_AFTER).
 === OUTPUT (raw JSON only) ===
 {{
     "ANALYSIS_TEXT": "## JD Analysis\\n**Top ATS Keywords:** ...\\n**ATS Score Before:** X/100\\n**ATS Score After:** Y/100\\n**Strengths:** ...\\n**Gaps:** ...",
-    "CAREER_OBJECTIVE": "3-4 sentence plain text, max 60 words.",
+    "CAREER_OBJECTIVE": "4-5 sentence plain text, 75-90 words.",
     "KEY_COURSES": "Course Name (grade), Course Name (grade)",
     "SELECTED_PROJECTS": [
-        {{"id": "MRAI", "bullets": ["Bullet 1", "Bullet 2", "Bullet 3"]}},
-        {{"id": "XRAY", "bullets": ["Bullet 1", "Bullet 2", "Bullet 3"]}}
+        {{"id": "MRAI", "bullets": ["20-30 word bullet 1", "20-30 word bullet 2", "20-30 word bullet 3"]}},
+        {{"id": "XRAY", "bullets": ["20-30 word bullet 1", "20-30 word bullet 2", "20-30 word bullet 3"]}}
     ],
-    "EXPERIENCE_BULLETS": ["Bullet 1", "Bullet 2"],
+    "EXPERIENCE_BULLETS": ["Bullet 1", "Bullet 2", "Bullet 3"],
     "JD_KEYWORDS_USED": ["keyword1", "keyword2", "keyword3"],
     "MISSING_KEYWORDS": ["keyword1", "keyword2"],
     "ATS_SCORE_BEFORE": 65,
