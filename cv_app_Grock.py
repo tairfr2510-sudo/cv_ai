@@ -547,7 +547,7 @@ FEW-SHOT QUALITY STANDARD (imitate this level of specificity):
 ❌ WEAK: "Designed a mechanical hand in SolidWorks."
 ✅ STRONG: "Modeled a multi-articulated mechanical hand in SolidWorks, mimicking anatomical joint kinematics, with full tolerance analysis and assembly files for 3D printing."
 
-STEP 6 — EXPERIENCE BULLETS (Redefinemeat, EXACTLY 4 bullets, max 15 words each):
+STEP 6 — EXPERIENCE BULLETS (Redefinemeat, EXACTLY 4 bullets important, max 13 words each):
 Reframe the 3D Printer Operator role to match this JD's domain.
 Use the 4 achievement facts in the Fact Sheet. Same quality standard: specific, action-oriented, no hallucination.
 
