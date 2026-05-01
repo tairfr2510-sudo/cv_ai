@@ -507,7 +507,7 @@ STEP 2 — ATS SCORE BEFORE:
 Score the candidate's raw resume against the JD on a 0-100 scale. Be honest and realistic.
 
 STEP 3 — CAREER OBJECTIVE:
-Write a 5-6 line career objective (max 80 words) that:
+Write a 5-6 line career objective (max 75 words) that:
 - Opens with the candidate's identity (Biomedical Engineering student, Technion)
 - Highlights the 2 most relevant projects for this JD
 - Embeds exact ATS keywords from the JD naturally
@@ -530,7 +530,7 @@ PROJECT-TO-DOMAIN MATCHING GUIDE (follow this strictly):
 - JD mentions robotics / automation / computer vision / embedded / real-time / sensors / positioning / motion control → XRAY is your first choice
 - When two domains overlap, pick the best two. NEVER default to MRAI+XRAY just because they seem more impressive — match the JD domain.
 
-For each selected project write  3-4 bullets:
+For each selected project write exactly 3 bullets:
 - MIN ONE FULL LINE per bullet Max 20 words per bullet
 - Format: Strong Action Verb + specific technical detail (tool/algorithm/mechanism) + outcome
 - Embed exact JD keywords naturally
@@ -547,7 +547,7 @@ FEW-SHOT QUALITY STANDARD (imitate this level of specificity):
 ❌ WEAK: "Designed a mechanical hand in SolidWorks."
 ✅ STRONG: "Modeled a multi-articulated mechanical hand in SolidWorks, mimicking anatomical joint kinematics, with full tolerance analysis and assembly files for 3D printing."
 
-STEP 6 — EXPERIENCE BULLETS (Redefinemeat, EXACTLY 4 bullets important, max 13 words each):
+STEP 6 — EXPERIENCE BULLETS (Redefinemeat, EXACTLY 4 bullets important, max 15 words each):
 Reframe the 3D Printer Operator role to match this JD's domain.
 Use the 4 achievement facts in the Fact Sheet. Same quality standard: specific, action-oriented, no hallucination.
 
@@ -628,7 +628,7 @@ Return ONLY a raw JSON object with these exact keys:
             for proj in raw_projects:
                 proj["bullets"] = trim_bullets(proj.get("bullets", []), 3, 22)
 
-            raw_exp = trim_bullets(data.get("EXPERIENCE_BULLETS", []), 2, 20)
+            raw_exp = trim_bullets(data.get("EXPERIENCE_BULLETS", []), 4, 20)
             raw_objective = trim_words(data.get("CAREER_OBJECTIVE", ""), 75)
             # ─────────────────────────────────────────────────────────
 
