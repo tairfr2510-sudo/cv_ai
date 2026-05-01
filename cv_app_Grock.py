@@ -170,7 +170,7 @@ Technion - Israel Institute of Technology \hfill \textbf{GPA: 90}
 % Army Service (HARDCODED)
 \section{Military Service}
 \begin{flushleft}
-\textbf{Soldier in the special unit ``Dia'',Commander 869th Combat Collection Battalion}
+\textbf{Soldier in the special unit ``Dia''} --- \textbf{869th Combat Collection Battalion}
 \begin{itemize}[noitemsep, topsep=2pt]
     \item Received excellence recognition in training and granted a parachute course as a prize.
     \item Selected for the commanders' training course, Trainees commander, commander in operational line.
@@ -201,29 +201,44 @@ FACT_SHEET = """
 [PROFESSIONAL EXPERIENCE]
 - Role: 3D Printer Operator (Meat-Replacement Printing)
 - Company: Redefinemeat, Rehovot (06/2022 - 07/2023)
-- Details: Operated and optimized 3D printers specifically for meat substitutes. 
-- Achievements: Collaborated with R&D on troubleshooting and protocol development. Initiated and built a SharePoint site for the team and implemented Excel data tracking to enhance productivity.
+- Responsibilities: Operated and optimized industrial 3D printers for food-tech meat-substitute production.
+- Achievement 1: Initiated and built a SharePoint knowledge base for the printing team from scratch, centralizing documentation and improving cross-shift productivity.
+- Achievement 2: Implemented Excel-based data tracking and analysis system to monitor print quality metrics and enhance work quality.
+- Achievement 3: Collaborated directly with the R&D team on troubleshooting printer failures and co-developing improved printing protocols.
+- Achievement 4: Managed full technical and operational processes including equipment calibration, fault diagnosis, and protocol development.
 
 [ENGINEERING PROJECTS]
-1. AI-Powered MRI/CT Diagnostic & 3D Reconstruction Platform (MRAI Engine):
-   - Tech Stack: Python, PyTorch, DICOM/NIfTI processing.
-   - Details: Developed an end-to-end pipeline processing volumetric imaging. 
-   - AI/CV: Implemented a 3D U-Net deep learning model for automated brain tumor segmentation. 
-   - Rendering: Generated 3D anatomical models using the Marching Cubes algorithm (STL export) and built a Multi-Planar Reconstruction (MPR) tool for slice inspection.
+1. AI-Powered MRI/CT Diagnostic & 3D Reconstruction Platform (ID: MRAI):
+   - Tech Stack: Python, PyTorch, fastai, nibabel, pydicom, scipy, scikit-image, numpy-stl, fpdf, Tkinter, matplotlib.
+   - Data Pipeline: Built DICOM loader with spatial sorting via ImageOrientationPatient cross-product (slice normal vector); NIfTI loader via nibabel. Aspect-ratio correction using PixelSpacing + SliceThickness via scipy.ndimage.zoom.
+   - AI Model: 3D U-Net (PyTorch/fastai) for automated brain tumor segmentation. Outputs: tumor confidence %, Z-slice range, peak slice index, 3D binary mask, centroid coordinates (x,y).
+   - 3D Reconstruction: Gaussian filter (σ=1) → Marching Cubes (skimage.measure) with physical voxel spacing → STL export (numpy-stl). Tumor volume computed via get_mass_properties() in cm³.
+   - MPR Viewer: Synchronized Axial/Coronal/Sagittal crosshairs with click-to-navigate between planes. Supports rotation, zoom, colormap switching (gray/hot/viridis/inferno).
+   - DSP Module: FFT high-pass filter + Unsharp Masking (α=1.5) for edge enhancement.
+   - PDF Report: Auto-generated clinical report via fpdf with AI findings + orthogonal slice screenshots.
+   - Architecture: Non-blocking AI analysis via threading.Thread; GUI built with Tkinter + matplotlib TkAgg backend.
 
-2. Autonomous X-Ray Targeting & Positioning System:
-   - Tech Stack: Python, OpenCV, MediaPipe, Tkinter, threading.
-   - Details: Designed an autonomous system integrating Computer Vision and NLP (Hebrew text input) for automated X-ray arm alignment.
-   - Mechanism: Developed a Python-based state machine (Idle, Macro Move, Micro Center) for precise motion control.
-   - Features: Real-time pose detection, dynamic 3x auto-zooming, moving crosshair alignment, and image enhancement (CLAHE).
+2. Autonomous X-Ray Targeting & Positioning System (ID: XRAY):
+   - Tech Stack: Python, OpenCV, MediaPipe PoseLandmarker, Tkinter, threading, pynput, math.
+   - State Machine: 4-state visual servoing: IDLE → MACRO_MOVE (error >100px, step=15px) → MICRO_CENTER (error ≤100px & >20px, step=3px) → READY (error ≤20px tolerance).
+   - Computer Vision: MediaPipe PoseLandmarker (33 landmarks, visibility threshold >0.3) for real-time pose detection at 1280×720, 30fps.
+   - NLP: Hebrew free-text input parsed to 13 anatomical targets (chest, head, abdomen, bilateral shoulder/elbow/wrist/hip/knee/ankle) via keyword mapping.
+   - Dynamic Zoom: 4x zoom via crop-and-resize (not digital zoom), centered on detected target; crosshair locked at frame center.
+   - Angle Calculation: atan2-based limb angle computation for X-ray tube rotation alignment.
+   - Medical Protocols: Auto-detects clinical condition from text (fracture→AP+Lateral 0°+90°, sprain→Mortise 15-20°, fluid→Weight-bearing, foreign body→Tangential multi-angle).
+   - Image Enhancement: CLAHE (clipLimit=3.0, tileGridSize=8×8) applied to final scan frame.
+   - Output: Motor command string (direction + error px), tube tilt angle, rotation angle; X-ray simulation saved as JPG.
+   - UX: Recording mode — state machine activates only on RECORD button press; STOP pauses at current position.
 
-3. Mechanical Hand Design & Modeling (SolidWorks Project)
-    - Designed a multi-articulated mechanical hand mechanism using SolidWorks, focusing on mimicking anatomical joint movements.
-    -Performed tolerance analysis and created detailed assembly files for potential 3D printing manufacturing.
+3. Mechanical Hand Design & Modeling (ID: MECH):
+   - Tool: SolidWorks (CAD/CAM).
+   - Design: Multi-articulated mechanical hand mechanism mimicking anatomical joint movements (finger joints, knuckles).
+   - Engineering: Performed tolerance analysis to ensure fit and function across assembly components.
+   - Output: Full assembly files (.SLDASM) designed for 3D printing manufacturing.
 
 [SKILLS]
-- Technical: Python, PyTorch, OpenCV, MediaPipe, NLP, SolidWorks, MATLAB, Excel, SharePoint.
-- Soft Skills: Analytical Thinking, Quick Learner, Team Leadership, Problem Solving.
+- Technical: Python, PyTorch, OpenCV, MediaPipe, fastai, nibabel, pydicom, SolidWorks, MATLAB, Excel, SharePoint.
+- Soft Skills: Analytical Thinking, Quick Learner, Team Leadership, Problem Solving, Cross-functional Collaboration.
 """
 
 # ============ STREAMLIT PAGE CONFIG ============
@@ -348,23 +363,30 @@ Rules:
 - Never invent or rename courses
 
 STEP 5 — PROJECT SELECTION & BULLETS:
-Available project IDs and their real content:
-- "MRAI": AI-Powered MRI/CT platform — Python, PyTorch, 3D U-Net tumor segmentation, DICOM/NIfTI, Marching Cubes 3D reconstruction, MPR tool.
-- "XRAY": Autonomous X-ray positioning system — Python, OpenCV, MediaPipe, NLP (Hebrew), state machine (Idle/Macro/Micro), real-time pose detection, CLAHE image enhancement.
-- "MECH": Mechanical hand design — SolidWorks, multi-articulated joint mechanism, tolerance analysis, assembly files for 3D printing.
+Select EXACTLY 2 project IDs most relevant to the JD (choose from: "MRAI", "XRAY", "MECH").
+All technical facts are in the Fact Sheet above — use them as raw material. Do NOT invent.
 
-Select EXACTLY 2 project IDs most relevant to the JD.
-For each project write 3-4 bullets:
-- Format: Action Verb + specific technical action + measurable or professional impact
-- Embed exact JD keywords naturally
-- Use hands-on / production / engineering language where relevant
-- NEVER invent tools, metrics, or results not in the Fact Sheet
+For each project write EXACTLY 3 bullets using this quality standard:
+- Format: Strong Action Verb + specific technical detail (method/tool/algorithm) + outcome or impact
+- Pull in EXACT keywords from the JD naturally
+- Be specific: name the algorithm, the library, the mechanism — not vague descriptions
+- NEVER invent tools, results, or metrics not present in the Fact Sheet
+
+FEW-SHOT EXAMPLES (study these — this is the quality level required):
+
+❌ WEAK bullet: "Implemented a U-Net model for tumor detection."
+✅ STRONG bullet: "Engineered a 3D U-Net (PyTorch/fastai) for automated brain tumor segmentation, producing confidence scores, Z-slice tumor range, and a 3D binary mask with centroid coordinates."
+
+❌ WEAK bullet: "Built a system for X-ray targeting using computer vision."
+✅ STRONG bullet: "Designed a 4-state visual servoing pipeline (IDLE→MACRO→MICRO→READY) using MediaPipe PoseLandmarker and OpenCV, achieving ±20px centering precision on 13 anatomical targets."
+
+❌ WEAK bullet: "Built a SharePoint site for the team."
+✅ STRONG bullet: "Initiated and deployed a team-wide SharePoint knowledge base from scratch, consolidating operational protocols and reducing cross-shift information loss."
 
 STEP 6 — EXPERIENCE BULLETS (Redefinemeat):
-Write 2-3 bullets for the 3D Printer Operator role, reframed to highlight:
-- The skills most relevant to this specific JD
-- Hands-on technical work, troubleshooting, process optimization, cross-team collaboration
-- Use only real facts from the Fact Sheet. No hallucination.
+Write 2-3 bullets for the 3D Printer Operator role, reframed to highlight skills relevant to the JD.
+Use the 4 achievement facts in the Fact Sheet — reframe, combine, or emphasize as needed.
+Same quality standard as above: specific, action-oriented, no hallucination.
 
 STEP 7 — SKILLS:
 Group into exactly 2 categories:
@@ -405,12 +427,21 @@ Return ONLY a raw JSON object with these exact keys:
             chat_completion = client.chat.completions.create(
                 messages=[
                     {
+                        "role": "system",
+                        "content": (
+                            "You are a senior resume strategist and ATS expert specializing in engineering and medical technology roles. "
+                            "You write precise, impactful resume bullets grounded strictly in provided facts. "
+                            "You always return valid JSON with no LaTeX, no Markdown code blocks, and no invented data. "
+                            "Your bullet quality is specific, technical, and results-oriented."
+                        )
+                    },
+                    {
                         "role": "user",
                         "content": master_prompt,
                     }
                 ],
                 model="llama-3.3-70b-versatile",
-                temperature=0.2,
+                temperature=0.15,
                 response_format={"type": "json_object"}
             )
             
