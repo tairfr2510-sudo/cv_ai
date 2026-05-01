@@ -530,8 +530,8 @@ PROJECT-TO-DOMAIN MATCHING GUIDE (follow this strictly):
 - JD mentions robotics / automation / computer vision / embedded / real-time / sensors / positioning / motion control → XRAY is your first choice
 - When two domains overlap, pick the best two. NEVER default to MRAI+XRAY just because they seem more impressive — match the JD domain.
 
-For each selected project write EXACTLY 3 bullets:
-- Max 22 words per bullet
+For each selected project write  3-4 bullets:
+- MIN ONE FULL LINE per bullet Max 20 words per bullet
 - Format: Strong Action Verb + specific technical detail (tool/algorithm/mechanism) + outcome
 - Embed exact JD keywords naturally
 - NEVER invent tools, metrics, or results not in the Fact Sheet
@@ -547,14 +547,14 @@ FEW-SHOT QUALITY STANDARD (imitate this level of specificity):
 ❌ WEAK: "Designed a mechanical hand in SolidWorks."
 ✅ STRONG: "Modeled a multi-articulated mechanical hand in SolidWorks, mimicking anatomical joint kinematics, with full tolerance analysis and assembly files for 3D printing."
 
-STEP 6 — EXPERIENCE BULLETS (Redefinemeat, EXACTLY 2 bullets, max 20 words each):
+STEP 6 — EXPERIENCE BULLETS (Redefinemeat, EXACTLY 4 bullets, max 15 words each):
 Reframe the 3D Printer Operator role to match this JD's domain.
 Use the 4 achievement facts in the Fact Sheet. Same quality standard: specific, action-oriented, no hallucination.
 
 STEP 7 — SKILLS:
 Group into exactly 2 categories:
 - "Technical": list only tools/technologies confirmed by the projects and experience in the Fact Sheet. Add relevant JD keywords only if they map to real skills.
-- "Soft Skills": pick the most relevant traits from both the JD and the Fact Sheet.
+- "Soft Skills": pick the most relevant traits from the JD.
 
 STEP 8 — ATS SCORE AFTER:
 Re-score the improved resume against the JD. Estimate the improvement.
