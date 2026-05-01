@@ -269,7 +269,7 @@ if st.button("🚀 Customize Resume", key="customize_btn", use_container_width=T
 
             INSTRUCTIONS:
             1. ANALYSIS: Evaluate the match between the candidate and the JD.
-            2. CAREER OBJECTIVE: Write a sharp 3-4 line objective tailored to the JD. Do NOT hallucinate.
+            2. CAREER OBJECTIVE: Write a sharp 5-6 line objective tailored to the JD. Do NOT hallucinate.
             3. KEY COURSES: Select EXACTLY 2 or 3 most relevant courses from the Fact Sheet (e.g., "Python programming (100), Signals and Systems (91)").
             4. BULLET POINTS (Projects & Experience):
                - Write exactly 3-4 bullet points for the MRAI Engine project.
@@ -277,7 +277,8 @@ if st.button("🚀 Customize Resume", key="customize_btn", use_container_width=T
                - Write exactly 3-4 bullet points for the 3D Printer Operator role.
                - RULE: EVERY bullet MUST follow the 'Action + Impact + Result' formula.
                - RULE: Embed EXACT keywords from the JD naturally. Do NOT invent metrics or fake experience.
-            5. SKILLS: Select and group the most relevant skills into 2 categories (e.g., "Technical", "Soft Skills").
+            5. SKILLS: Select and group the most relevant skills into 2 categories (e.g., "Technical", "Soft Skills")
+                - The soft skills you can take from the JD, the technical skills from what you know about me from the projects and experience.
 
             OUTPUT FORMAT (JSON ONLY):
             Return ONLY a raw JSON object. Do not use Markdown formatting (no ```json). 
