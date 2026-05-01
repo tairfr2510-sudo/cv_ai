@@ -317,12 +317,11 @@ if st.button("🚀 Customize Resume", key="customize_btn", use_container_width=T
 
             INSTRUCTIONS:
             1. ANALYSIS: Evaluate the match between the candidate and the JD.
-            2. CAREER OBJECTIVE: Write exactly 3 lines (max 60 words total) tailored to the JD. Do NOT hallucinate.
-            3. KEY COURSES: Select EXACTLY 2 relevant courses only from Allowed Courses Pool and keep the grade exactly as written (for example: 'Signals and Systems (91)'). Never invent courses.
-            3. KEY COURSES: Select EXACTLY 2 relevant courses only from Allowed Courses Pool. Never invent courses.
+            2. CAREER OBJECTIVE: Write exactly 6 lines (max 100 words total) tailored to the JD. Do NOT hallucinate.
+            3. KEY COURSES: Select EXACTLY 2 relevant courses only from Allowed Courses Pool and keep the grade exactly as written (for example: 'Signals and Systems (91)'). Never invent courses
             4. PROJECT SELECTION + BULLETS:
-               - Select EXACTLY 2 projects from this fixed list: ["MRAI", "XRAY"].
-               - For each selected project write exactly 2-3 bullet points.
+               - Select EXACTLY 2 projects from this fixed list: ["MRAI", "XRAY", "Mechanical Hand Design & Modeling"].
+               - For each selected project write exactly 3-4 bullet points.
                - For experience write exactly 2-3 bullet points.
                - RULE: EVERY bullet MUST follow the 'Action + Impact + Result' formula.
                - RULE: Embed EXACT keywords from the JD naturally. Do NOT invent metrics or fake experience.
