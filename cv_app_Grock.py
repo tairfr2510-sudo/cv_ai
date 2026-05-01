@@ -170,7 +170,7 @@ Technion - Israel Institute of Technology \hfill \textbf{GPA: 90}
 % Army Service (HARDCODED)
 \section{Military Service}
 \begin{flushleft}
-\textbf{Soldier in the special unit ``Dia''} --- \textbf{869th Combat Collection Battalion}
+\textbf{Soldier in the special unit ``Dia'',Commander 869th Combat Collection Battalion}
 \begin{itemize}[noitemsep, topsep=2pt]
     \item Received excellence recognition in training and granted a parachute course as a prize.
     \item Selected for the commanders' training course, Trainees commander, commander in operational line.
