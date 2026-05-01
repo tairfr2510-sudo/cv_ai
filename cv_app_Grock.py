@@ -107,76 +107,66 @@ def select_valid_courses(raw_courses, allowed_courses, max_courses=3):
 # ============ LOAD LATEX TEMPLATE ============
 LATEX_TEMPLATE = r"""\documentclass[11pt,a4paper,sans]{article}
 
-% Packages for formatting
+% Packages
 \usepackage{ulem}
 \usepackage[utf8]{inputenc}
-\usepackage[left=0.75in,top=0.6in,right=0.75in,bottom=0.6in]{geometry}
+\usepackage[left=0.65in,top=0.45in,right=0.65in,bottom=0.45in]{geometry}
 \usepackage{titlesec}
 \usepackage{enumitem}
 \usepackage{hyperref}
 \usepackage{xcolor}
 
-% Custom Colors
-\definecolor{primary}{RGB}{0, 0, 0}
+% Global list tightening
+\setlist[itemize]{noitemsep, topsep=1pt, parsep=0pt, partopsep=0pt}
 
-% Title Formatting
+% Section formatting
 \titleformat{\section}{\large\bfseries\uppercase}{}{0pt}{}[\titlerule]
-\titlespacing{\section}{0pt}{10pt}{5pt}
+\titlespacing{\section}{0pt}{5pt}{2pt}
 
-% Document Start
 \begin{document}
-
 \pagestyle{empty}
+\raggedright
+\setlength{\parskip}{2pt}
+\setlength{\parindent}{0pt}
 
 % Header
 \begin{center}
     {\Huge \textbf{TAIR FRIDMAN}} \\
-    \vspace{4pt}
+    \vspace{2pt}
     \textbf{Third Year Biomedical Engineering Student at the Technion} \\
-    \vspace{4pt}
-    054-9988143  $|$ tairfr2510@gmail.com $|$ { \href{http://www.linkedin.com/in/tairfridman}{\uline{Linkedin}}} $|$ \href{https://technionmail-my.sharepoint.com/:f:/g/personal/tair_fridman_campus_technion_ac_il/IgB6kjkw2NY_Q7lWN8LxAKPkAZNCp29HqfC-8IRGrvIwpbQ?e=Adc87l}{\uline{Project Portfolio}}
+    \vspace{2pt}
+    054-9988143  $|$ tairfr2510@gmail.com $|$ \href{http://www.linkedin.com/in/tairfridman}{\uline{LinkedIn}} $|$ \href{https://technionmail-my.sharepoint.com/:f:/g/personal/tair_fridman_campus_technion_ac_il/IgB6kjkw2NY_Q7lWN8LxAKPkAZNCp29HqfC-8IRGrvIwpbQ?e=Adc87l}{\uline{Project Portfolio}}
 \end{center}
 
 % Career Objective
 \section{Career Objective}
-\begin{flushleft}
 {{CAREER_OBJECTIVE}}
-\end{flushleft}
 
 % Education
 \section{Education}
-\begin{flushleft}
 \textbf{B.Sc. in Biomedical Engineering (In Progress)} \hfill 2023 -- Present \\
 Technion - Israel Institute of Technology \hfill \textbf{GPA: 90}
-
-\begin{itemize}[noitemsep, topsep=2pt]
+\begin{itemize}
     \item Dean's List (Academic Excellence): Winter 2024, Spring 2025, Winter 2026.
     \item Key Courses: {{KEY_COURSES}}
 \end{itemize}
-\end{flushleft}
 
 % Projects
 \section{Projects}
-\begin{flushleft}
 {{PROJECTS_SECTION}}
-\end{flushleft}
 
 % Experience
 \section{Professional Experience}
-\begin{flushleft}
 {{EXPERIENCE_SECTION}}
-\end{flushleft}
 
-% Army Service (HARDCODED)
+% Military Service
 \section{Military Service}
-\begin{flushleft}
 \textbf{Soldier in the special unit ``Dia''} --- \textbf{869th Combat Collection Battalion}
-\begin{itemize}[noitemsep, topsep=2pt]
+\begin{itemize}
     \item Received excellence recognition in training and granted a parachute course as a prize.
-    \item Selected for the commanders' training course, Trainees commander, commander in operational line.
-    \item Team Sergeant (Operational Line): Led the team in the absence of the team leader, made critical decisions under pressure, and oversaw soldiers while managing the team logistics.
+    \item Selected for the commanders' training course; served as Trainees Commander and operational line commander.
+    \item Team Sergeant (Operational Line): led team in absence of team leader, made critical decisions under pressure, managed team logistics.
 \end{itemize}
-\end{flushleft}
 
 % Skills
 \section{Skills}
@@ -310,94 +300,88 @@ if st.button("🚀 Customize Resume", key="customize_btn", use_container_width=T
             allowed_courses_text = ", ".join(allowed_courses)
 
             master_prompt = f"""
-You are an expert resume writer and ATS optimization specialist.
-Your goal is to reorganize and improve a resume to match a specific job description — WITHOUT inventing experience that does not exist.
+You are a senior resume strategist and ATS specialist. Your job is to produce the strongest possible one-page resume for the candidate against a specific job description.
+
+PHILOSOPHY: You may use bold, impactful language and present real experiences in the most impressive, industry-relevant way possible. Reframe, reorder emphasis, use strong action verbs, and adopt the vocabulary of the JD's industry. You may infer skills that are clearly implied by the projects (e.g. if a project used PyTorch you can claim deep learning). What you must NEVER do: invent jobs, tools, metrics, or experiences that have no basis in the Fact Sheet.
 
 === INPUTS ===
-Job Description (JD):
+Job Description:
 {job_description}
 
-Candidate Fact Sheet (ground truth — do not invent beyond this):
+Candidate Fact Sheet (ground truth):
 {FACT_SHEET}
 
-Allowed Courses Pool (select ONLY from this list):
+Allowed Courses Pool:
 {allowed_courses_text}
 
-=== STEP-BY-STEP INSTRUCTIONS ===
+=== STEPS ===
 
-STEP 1 — JD ANALYSIS:
-Extract the top ATS keywords, required skills, and key responsibilities from the JD.
-Identify which of these the candidate already has, and which are gaps.
+STEP 1 — ATS ANALYSIS:
+- Extract the top 10 ATS keywords / required skills from the JD.
+- Identify which the candidate has (strengths) and which are gaps.
+- Score the raw resume vs. JD: ATS_SCORE_BEFORE (0-100).
 
-STEP 2 — ATS SCORE BEFORE:
-Score the candidate's raw resume against the JD on a 0-100 scale. Be honest and realistic.
+STEP 2 — CAREER OBJECTIVE (strict length: 3-4 sentences, MAX 80 words):
+- Sentence 1: Who the candidate is + most relevant degree/institution.
+- Sentence 2-3: The 2 most relevant projects, with JD-specific vocabulary.
+- Sentence 4: What value the candidate brings to this role.
+- Use powerful industry language. No filler phrases. No hallucination.
 
-STEP 3 — CAREER OBJECTIVE:
-Write a 5-6 line career objective (max 80 words) that:
-- Opens with the candidate's identity (Biomedical Engineering student, Technion)
-- Highlights the 2 most relevant projects for this JD
-- Embeds exact ATS keywords from the JD naturally
-- Uses industry-specific language (manufacturing / engineering / medical / software — match the JD's domain)
-- Is professional, concise, and does NOT hallucinate
+STEP 3 — KEY COURSES (select 2-3, ONLY from Allowed Courses Pool):
+- Pick the most relevant to the JD.
+- Copy course name and grade exactly as written (e.g. "Signals and Systems (91)").
+- Never invent or rename.
 
-STEP 4 — KEY COURSES:
-Select 2 to 3 courses that are MOST relevant to the JD.
-Rules:
-- Select ONLY from the Allowed Courses Pool
-- Copy the exact course name and grade (e.g. 'Signals and Systems (91)')
-- Never invent or rename courses
+STEP 4 — PROJECTS (select EXACTLY 2 from: "MRAI", "XRAY", "MECH"):
+Project facts:
+- MRAI: Python, PyTorch, 3D U-Net, brain tumor segmentation, DICOM/NIfTI, Marching Cubes 3D reconstruction, MPR viewer.
+- XRAY: Python, OpenCV, MediaPipe, NLP (Hebrew input), state machine (Idle/Macro/Micro), real-time pose detection, CLAHE, automated alignment.
+- MECH: SolidWorks, multi-articulated mechanical hand, anatomical joint mimicry, tolerance analysis, assembly for 3D printing.
 
-STEP 5 — PROJECT SELECTION & BULLETS:
-Available project IDs and their real content:
-- "MRAI": AI-Powered MRI/CT platform — Python, PyTorch, 3D U-Net tumor segmentation, DICOM/NIfTI, Marching Cubes 3D reconstruction, MPR tool.
-- "XRAY": Autonomous X-ray positioning system — Python, OpenCV, MediaPipe, NLP (Hebrew), state machine (Idle/Macro/Micro), real-time pose detection, CLAHE image enhancement.
-- "MECH": Mechanical hand design — SolidWorks, multi-articulated joint mechanism, tolerance analysis, assembly files for 3D printing.
+For each selected project write EXACTLY 3 bullets (no more, no less):
+- Max 22 words per bullet.
+- Format: Strong Action Verb + technical detail + impact/outcome.
+- Embed JD keywords naturally. Use industry vocabulary.
+- Imply skills strongly (e.g. "engineered", "deployed", "optimized" are fine for real work).
+- NEVER invent tools or results not in the facts above.
 
-Select EXACTLY 2 project IDs most relevant to the JD.
-For each project write 3-4 bullets:
-- Format: Action Verb + specific technical action + measurable or professional impact
-- Embed exact JD keywords naturally
-- Use hands-on / production / engineering language where relevant
-- NEVER invent tools, metrics, or results not in the Fact Sheet
+STEP 5 — EXPERIENCE (Redefinemeat, EXACTLY 2 bullets):
+- Max 20 words per bullet.
+- Reframe the 3D Printer Operator role to highlight what is most relevant to this JD.
+- Allowed: process optimization, cross-functional collaboration, troubleshooting, data tracking, R&D support, protocol development.
+- Strong language is encouraged. No invented facts.
 
-STEP 6 — EXPERIENCE BULLETS (Redefinemeat):
-Write 2-3 bullets for the 3D Printer Operator role, reframed to highlight:
-- The skills most relevant to this specific JD
-- Hands-on technical work, troubleshooting, process optimization, cross-team collaboration
-- Use only real facts from the Fact Sheet. No hallucination.
+STEP 6 — SKILLS (exactly 2 categories: "Technical" and "Soft Skills"):
+- Technical: tools/technologies from projects + experience. Add JD-relevant terms only if genuinely implied.
+- Soft Skills: 4-5 traits, most relevant to the JD, drawn from the Fact Sheet.
+- Keep each list short and punchy (comma-separated, no sentences).
 
-STEP 7 — SKILLS:
-Group into exactly 2 categories:
-- "Technical": list only tools/technologies confirmed by the projects and experience in the Fact Sheet. Add relevant JD keywords only if they map to real skills.
-- "Soft Skills": pick the most relevant traits from both the JD and the Fact Sheet.
+STEP 7 — ATS SCORE AFTER:
+Re-score the improved resume vs. JD (ATS_SCORE_AFTER).
 
-STEP 8 — ATS SCORE AFTER:
-Re-score the improved resume against the JD. Estimate the improvement.
+=== HARD RULES ===
+- Total bullet content must fit on ONE A4 page with other fixed sections.
+- Do NOT add LaTeX commands inside JSON values (no \\textbf, \\item, \\begin).
+- Return plain text only inside all JSON string values.
+- Do NOT use Markdown code blocks or ```json formatting.
 
-=== CRITICAL RULES ===
-- Do NOT invent experience, tools, metrics, or results
-- Do NOT add LaTeX commands (no \\textbf, \\begin, \\item etc.) — plain text only inside JSON values
-- Do NOT use Markdown formatting or ```json blocks
-
-=== OUTPUT FORMAT (JSON ONLY) ===
-Return ONLY a raw JSON object with these exact keys:
-
+=== OUTPUT (raw JSON only) ===
 {{
-    "ANALYSIS_TEXT": "Markdown-formatted string with: JD Keywords extracted, ATS Score Before (X/100), ATS Score After (Y/100), Strengths, Gaps, Missing Keywords list.",
-    "CAREER_OBJECTIVE": "Plain text, 5-6 lines.",
-    "KEY_COURSES": "course1 (grade), course2 (grade), course3 (grade)",
+    "ANALYSIS_TEXT": "## JD Analysis\\n**Top ATS Keywords:** ...\\n**ATS Score Before:** X/100\\n**ATS Score After:** Y/100\\n**Strengths:** ...\\n**Gaps:** ...",
+    "CAREER_OBJECTIVE": "3-4 sentence plain text, max 60 words.",
+    "KEY_COURSES": "Course Name (grade), Course Name (grade)",
     "SELECTED_PROJECTS": [
         {{"id": "MRAI", "bullets": ["Bullet 1", "Bullet 2", "Bullet 3"]}},
         {{"id": "XRAY", "bullets": ["Bullet 1", "Bullet 2", "Bullet 3"]}}
     ],
-    "EXPERIENCE_BULLETS": ["Bullet 1", "Bullet 2", "Bullet 3"],
+    "EXPERIENCE_BULLETS": ["Bullet 1", "Bullet 2"],
     "JD_KEYWORDS_USED": ["keyword1", "keyword2", "keyword3"],
     "MISSING_KEYWORDS": ["keyword1", "keyword2"],
     "ATS_SCORE_BEFORE": 65,
     "ATS_SCORE_AFTER": 82,
     "SKILLS": {{
-        "Technical": "Python, SolidWorks...",
-        "Soft Skills": "Analytical Thinking..."
+        "Technical": "Python, PyTorch, OpenCV...",
+        "Soft Skills": "Analytical Thinking, Team Leadership..."
     }}
 }}
             """
