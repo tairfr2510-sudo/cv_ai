@@ -76,6 +76,31 @@ def build_skills_latex(skills_dict):
     latex += r"\end{itemize}" + "\n"
     return latex
 
+
+
+def normalize_course(course):
+    return re.sub(r'\s+', ' ', course.strip().lower())
+
+
+def select_valid_courses(raw_courses, allowed_courses, max_courses=2):
+    requested = [c.strip() for c in raw_courses.split(',') if c.strip()]
+    allowed_map = {normalize_course(c): c.strip() for c in allowed_courses}
+    selected = []
+
+    for course in requested:
+        key = normalize_course(course)
+        if key in allowed_map and allowed_map[key] not in selected:
+            selected.append(allowed_map[key])
+
+    if len(selected) < max_courses:
+        for course in allowed_courses:
+            if course not in selected:
+                selected.append(course)
+            if len(selected) == max_courses:
+                break
+
+    return ", ".join(selected[:max_courses])
+
 # ============ LOAD LATEX TEMPLATE ============
 LATEX_TEMPLATE = r"""\documentclass[11pt,a4paper,sans]{article}
 
@@ -244,6 +269,7 @@ with col2:
     )
     courses_input = st.text_area(
         "📚 Courses you allow the AI to choose from (comma separated):",
+        value="Python Programming (100), Biological Fluid Mechanics (100), Signals and Systems (91)",
         value="Introduction to Computing with Python (100), Biological Fluid Mechanics (100), Physics 1M (100), Differential and Integral Calculus 1M2 (99), Directions in Biomedical Engineering (97), Introduction to Human Anatomy (97), Partial Differential Equations/T (96), Physical Chemistry 1B (96), Fundamentals of Medical Materials (96), Metabolic Pathways (96), Physics 2 (95), From Cells to Tissues (94), Introduction to Probability H (93), General Chemistry (92), Laboratory in Bio-Medical Engineering 1 (92), Body Systems Physiology for Engineers (92), Signals and Systems (91).",
         height=70,
         key="courses_input"
@@ -293,6 +319,7 @@ if st.button("🚀 Customize Resume", key="customize_btn", use_container_width=T
             INSTRUCTIONS:
             1. ANALYSIS: Evaluate the match between the candidate and the JD.
             2. CAREER OBJECTIVE: Write exactly 3 lines (max 60 words total) tailored to the JD. Do NOT hallucinate.
+            3. KEY COURSES: Select EXACTLY 2 relevant courses only from Allowed Courses Pool and keep the grade exactly as written (for example: 'Signals and Systems (91)'). Never invent courses.
             3. KEY COURSES: Select EXACTLY 2 relevant courses only from Allowed Courses Pool. Never invent courses.
             4. PROJECT SELECTION + BULLETS:
                - Select EXACTLY 2 projects from this fixed list: ["MRAI", "XRAY"].
@@ -316,6 +343,7 @@ if st.button("🚀 Customize Resume", key="customize_btn", use_container_width=T
                     {{"id": "XRAY", "bullets": ["Bullet 1", "Bullet 2"]}}
                 ],
                 "EXPERIENCE_BULLETS": ["Bullet 1", "Bullet 2"],
+                "JD_KEYWORDS_USED": ["keyword1", "keyword2", "keyword3"],
                 "SKILLS": {{
                     "Technical": "Python, SolidWorks...",
                     "Soft Skills": "Analytical Thinking..."
@@ -345,6 +373,11 @@ if st.button("🚀 Customize Resume", key="customize_btn", use_container_width=T
             
             # הרכבה בטוחה של ה-LaTeX (הסוף לקריסות!)
             st.session_state.analysis = data.get("ANALYSIS_TEXT", "לא נוצר ניתוח.")
+            validated_courses = select_valid_courses(data.get("KEY_COURSES", ""), allowed_courses)
+            st.session_state.keywords_used = data.get("JD_KEYWORDS_USED", [])
+            st.session_state.generated_sections = {
+                "CAREER_OBJECTIVE": escape_latex(data.get("CAREER_OBJECTIVE", "")),
+                "KEY_COURSES": escape_latex(validated_courses),
             st.session_state.generated_sections = {
                 "CAREER_OBJECTIVE": escape_latex(data.get("CAREER_OBJECTIVE", "")),
                 "KEY_COURSES": escape_latex(data.get("KEY_COURSES", "")),
@@ -363,6 +396,15 @@ if "analysis" in st.session_state:
     st.markdown("---")
     with st.expander("🧐 Professional Analysis & Match Score", expanded=True):
         st.markdown(st.session_state.analysis)
+
+if "keywords_used" in st.session_state:
+    with st.expander("🏷️ JD Keywords inserted into resume", expanded=True):
+        keywords = st.session_state.keywords_used
+        if keywords:
+            st.markdown("**Keywords used exactly from JD:**")
+            st.markdown("\n".join([f"- `{escape_latex(str(k))}`" for k in keywords]))
+        else:
+            st.warning("No keywords were reported by the model for this run.")
 
 # ============ DISPLAY & GENERATE PDF ============
 if "generated_sections" in st.session_state:
