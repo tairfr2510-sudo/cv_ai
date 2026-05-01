@@ -101,6 +101,18 @@ def select_valid_courses(raw_courses, allowed_courses, max_courses=2):
 
     return ", ".join(selected[:max_courses])
 
+
+
+def build_generated_sections(data, validated_courses):
+    """Build structured LaTeX-safe sections in one place to avoid malformed inline dict edits."""
+    return {
+        "CAREER_OBJECTIVE": escape_latex(data.get("CAREER_OBJECTIVE", "")),
+        "KEY_COURSES": escape_latex(validated_courses),
+        "PROJECTS_SECTION": build_projects_latex(data.get("SELECTED_PROJECTS", [])),
+        "EXPERIENCE_SECTION": build_experience_latex(data.get("EXPERIENCE_BULLETS", [])),
+        "SKILLS_SECTION": build_skills_latex(data.get("SKILLS", {})),
+    }
+
 # ============ LOAD LATEX TEMPLATE ============
 LATEX_TEMPLATE = r"""\documentclass[11pt,a4paper,sans]{article}
 
