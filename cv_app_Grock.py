@@ -147,7 +147,7 @@ LATEX_TEMPLATE = r"""\documentclass[11pt,a4paper,sans]{article}
 \section{Education}
 \begin{flushleft}
 \textbf{B.Sc. in Biomedical Engineering (In Progress)} \hfill 2023 -- Present \\
-Technion - Israel Institute of Technology \hfill \textbf{GPA: 90}
+Technion - Israel Institute of Technology \hfill \textbf{GPA: 91}
 
 \begin{itemize}[noitemsep, topsep=2pt]
     \item Dean's List (Academic Excellence): Winter 2024, Spring 2025, Winter 2026.
