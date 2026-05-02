@@ -1,0 +1,48 @@
+[PERSONAL & ACADEMIC]
+- Name: Tair Fridman
+- Education: 3rd-year B.Sc. in Biomedical Engineering, Technion - Israel Institute of Technology.
+- GPA: 90
+- Honors: Dean's List (Winter 2024, Spring 2025, Winter 2026).
+- Key Coursework: Python Programming (100), Biological Fluid Mechanics (100), Signals and Systems (91).
+
+[PROFESSIONAL EXPERIENCE]
+- Role: 3D Printer Operator (Meat-Replacement Printing)
+- Company: Redefinemeat, Rehovot (06/2022 - 07/2023)
+- Responsibilities: Operated and optimized industrial 3D printers for food-tech meat-substitute production.
+- Achievement 1: Initiated and built a SharePoint knowledge base for the printing team from scratch, centralizing documentation and improving cross-shift productivity.
+- Achievement 2: Implemented Excel-based data tracking and analysis system to monitor print quality metrics and enhance work quality.
+- Achievement 3: Collaborated directly with the R&D team on troubleshooting printer failures and co-developing improved printing protocols.
+- Achievement 4: Managed full technical and operational processes including equipment calibration, fault diagnosis, and protocol development.
+
+[ENGINEERING PROJECTS]
+1. AI-Powered MRI/CT Diagnostic & 3D Reconstruction Platform (ID: MRAI):
+   - Tech Stack: Python, PyTorch, fastai, nibabel, pydicom, scipy, scikit-image, numpy-stl, fpdf, Tkinter, matplotlib.
+   - Data Pipeline: Built DICOM loader with spatial sorting via ImageOrientationPatient cross-product (slice normal vector); NIfTI loader via nibabel. Aspect-ratio correction using PixelSpacing + SliceThickness via scipy.ndimage.zoom.
+   - AI Model: 3D U-Net (PyTorch/fastai) for automated brain tumor segmentation. Outputs: tumor confidence %, Z-slice range, peak slice index, 3D binary mask, centroid coordinates (x,y).
+   - 3D Reconstruction: Gaussian filter (σ=1) → Marching Cubes (skimage.measure) with physical voxel spacing → STL export (numpy-stl). Tumor volume computed via get_mass_properties() in cm³.
+   - MPR Viewer: Synchronized Axial/Coronal/Sagittal crosshairs with click-to-navigate between planes. Supports rotation, zoom, colormap switching (gray/hot/viridis/inferno).
+   - DSP Module: FFT high-pass filter + Unsharp Masking (α=1.5) for edge enhancement.
+   - PDF Report: Auto-generated clinical report via fpdf with AI findings + orthogonal slice screenshots.
+   - Architecture: Non-blocking AI analysis via threading.Thread; GUI built with Tkinter + matplotlib TkAgg backend.
+
+2. Autonomous X-Ray Targeting & Positioning System (ID: XRAY):
+   - Tech Stack: Python, OpenCV, MediaPipe PoseLandmarker, Tkinter, threading, pynput, math.
+   - State Machine: 4-state visual servoing: IDLE → MACRO_MOVE (error >100px, step=15px) → MICRO_CENTER (error ≤100px & >20px, step=3px) → READY (error ≤20px tolerance).
+   - Computer Vision: MediaPipe PoseLandmarker (33 landmarks, visibility threshold >0.3) for real-time pose detection at 1280×720, 30fps.
+   - NLP: Hebrew free-text input parsed to 13 anatomical targets (chest, head, abdomen, bilateral shoulder/elbow/wrist/hip/knee/ankle) via keyword mapping.
+   - Dynamic Zoom: 4x zoom via crop-and-resize (not digital zoom), centered on detected target; crosshair locked at frame center.
+   - Angle Calculation: atan2-based limb angle computation for X-ray tube rotation alignment.
+   - Medical Protocols: Auto-detects clinical condition from text (fracture→AP+Lateral 0°+90°, sprain→Mortise 15-20°, fluid→Weight-bearing, foreign body→Tangential multi-angle).
+   - Image Enhancement: CLAHE (clipLimit=3.0, tileGridSize=8×8) applied to final scan frame.
+   - Output: Motor command string (direction + error px), tube tilt angle, rotation angle; X-ray simulation saved as JPG.
+   - UX: Recording mode — state machine activates only on RECORD button press; STOP pauses at current position.
+
+3. Mechanical Hand Design & Modeling (ID: MECH):
+   - Tool: SolidWorks (CAD/CAM).
+   - Design: Multi-articulated mechanical hand mechanism mimicking anatomical joint movements (finger joints, knuckles).
+   - Engineering: Performed tolerance analysis to ensure fit and function across assembly components.
+   - Output: Full assembly files (.SLDASM) designed for 3D printing manufacturing.
+
+[SKILLS]
+- Technical: Python, PyTorch, OpenCV, MediaPipe, fastai, nibabel, pydicom, SolidWorks, MATLAB, Excel, SharePoint.
+- Soft Skills: Analytical Thinking, Quick Learner, Team Leadership, Problem Solving, Cross-functional Collaboration.
