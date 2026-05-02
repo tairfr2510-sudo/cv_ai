@@ -603,8 +603,8 @@ Return ONLY a raw JSON object with these exact keys:
                         "content": master_prompt,
                     }
                 ],
-                model="llama-3.3-70b-versatile",
-                temperature=0.15,
+                model="deepseek-r1-distill-llama-70b",
+                temperature=0.3,
                 response_format={"type": "json_object"}
             )
             
