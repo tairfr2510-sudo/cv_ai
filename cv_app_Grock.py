@@ -105,7 +105,7 @@ def select_valid_courses(raw_courses, allowed_courses, max_courses=3):
     return ", ".join(selected[:max_courses])
 
 # ============ LOAD LATEX TEMPLATE ============
-LATEX_TEMPLATE = r"""\documentclass[11pt,a4paper,sans]{article}
+LATEX_TEMPLATE = r"""\documentclass[10pt,a4paper,sans]{article}
 
 % Packages for formatting
 \usepackage{ulem}
