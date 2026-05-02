@@ -603,7 +603,7 @@ Return ONLY a raw JSON object with these exact keys:
                         "content": master_prompt,
                     }
                 ],
-                model="qwen/qwen3-32b",
+                model="openai/gpt-oss-120b",
                 temperature=0.2,
                 response_format={"type": "json_object"}
             )
