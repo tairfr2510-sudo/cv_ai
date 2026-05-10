@@ -151,6 +151,7 @@ Technion - Israel Institute of Technology \hfill \textbf{GPA: 91}
 
 \begin{itemize}[noitemsep, topsep=2pt]
     \item Dean's List (Academic Excellence): Winter 2024, Spring 2025, Winter 2026.
+    \item T2MED Hackathon Finalist \&  Team Leader\textbf{ :} Collaborated in a multidisciplinary team to design and pitch a technology-driven solution for real-world medical problems.
     \item Key Courses: {{KEY_COURSES}}
 \end{itemize}
 \end{flushleft}
