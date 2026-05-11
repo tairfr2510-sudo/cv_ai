@@ -484,7 +484,7 @@ Available projects: "MRAI", "XRAY", "MECH","ECG". Select EXACTLY 2 most relevant
 
 PROJECT-TO-DOMAIN MATCHING GUIDE (follow this strictly):
 - JD mentions mechanical / machinery / manufacturing / CAD / SolidWorks / assembly / production / tolerance / machine design / mechatronics → MECH is your FIRST choice
-- JD mentions AI / machine learning / deep learning / medical imaging / DICOM / segmentation / neural network / image processing → MRAI is your first choice
+- JD mentions AI / machine learning / deep learning / medical imaging / DICOM / segmentation / neural network / image processing → MRAI is your first choice , best project gets priority 
 - JD mentions robotics / automation / computer vision / embedded / real-time / sensors / positioning / motion control → XRAY is your first choice
 - JD mentions signal processing / DSP / MATLAB / ECG / algorithms / heart rate / biomedical signals / physiological data → ECG is your first choice
 - When two domains overlap, pick the best two. NEVER default to MRAI+XRAY just because they seem more impressive — match the JD domain.
