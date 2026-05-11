@@ -45,7 +45,7 @@ def build_projects_latex(selected_projects):
         },
         "ECG": {
             "title": r"\textbf{ECG Signal Processing \& Automated QRS Detection} \hfill \href{https://github.com/tairfr2510-sudo/ECG-Signal-Processing-QRS-Detection.git}{\uline{GitHub}}"
-    }
+    }}
 
     latex = ""
     for project in selected_projects[:2]:
