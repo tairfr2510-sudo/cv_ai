@@ -465,7 +465,7 @@ STEP 2 — ATS SCORE BEFORE:
 Score the candidate's raw resume against the JD on a 0-100 scale. Be honest and realistic.
 
 STEP 3 — CAREER OBJECTIVE:
-Write a 5-6 line career objective (max 75 words) that:
+Write a 4-5 line career objective (max 70 words) that:
 - Opens with the candidate's identity (Biomedical Engineering student, Technion)
 - Highlights the 2 most relevant projects for this JD
 - Embeds exact ATS keywords from the JD naturally
@@ -528,7 +528,7 @@ Return ONLY a raw JSON object with these exact keys:
 
 {{
     "ANALYSIS_TEXT": "Markdown-formatted string with: JD Keywords extracted, ATS Score Before (X/100), ATS Score After (Y/100), Strengths, Gaps, Missing Keywords list.",
-    "CAREER_OBJECTIVE": "Plain text, 5-6 lines.",
+    "CAREER_OBJECTIVE": "Plain text, 4-5 lines.",
     "KEY_COURSES": "course1 (grade), course2 (grade), course3 (grade)",
     "SELECTED_PROJECTS": [
         {{"id": "MRAI", "bullets": ["Bullet 1", "Bullet 2", "Bullet 3"]}},
@@ -585,10 +585,10 @@ Return ONLY a raw JSON object with these exact keys:
 
             raw_projects = data.get("SELECTED_PROJECTS", [])
             for proj in raw_projects:
-                proj["bullets"] = trim_bullets(proj.get("bullets", []), 3, 22)
+                proj["bullets"] = trim_bullets(proj.get("bullets", []), 3, 20)
 
             raw_exp = trim_bullets(data.get("EXPERIENCE_BULLETS", []), 4, 20)
-            raw_objective = trim_words(data.get("CAREER_OBJECTIVE", ""), 75)
+            raw_objective = trim_words(data.get("CAREER_OBJECTIVE", ""), 70)
             # ─────────────────────────────────────────────────────────
 
             validated_courses = select_valid_courses(data.get("KEY_COURSES", ""), allowed_courses, max_courses=3)
