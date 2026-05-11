@@ -512,7 +512,7 @@ Use the 4 achievement facts in the Fact Sheet. Same quality standard: specific, 
 
 STEP 7 — SKILLS:
 Group into exactly 2 categories:
-- "Technical": list only tools/technologies confirmed by the projects and experience in the Fact Sheet. Add relevant JD keywords only if they map to real skills.
+- "Technical": list only tools/technologies confirmed by the projects and experience in the Fact Sheet. Add relevant JD keywords only if they map to real skills.Pick the most relevant ones to the jd 
 - "Soft Skills": pick the most relevant traits from the JD.
 
 STEP 8 — ATS SCORE AFTER:
