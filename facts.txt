@@ -39,15 +39,16 @@
 
 3. Mechanical Hand Design & Modeling (ID: MECH):
    - Tool: SolidWorks (CAD/CAM).
+   - Design: Multi-articulated mechanical hand mechanism mimicking anatomical joint movements (finger joints, knuckles).
+   - Engineering: Performed tolerance analysis to ensure fit and function across assembly components.
+   - Output: Full assembly files (.SLDASM) designed for 3D printing manufacturing.
 
 4. ECG Signal Processing & Automated QRS Detection (ID: ECG):
    - Tech Stack: MATLAB, Digital Signal Processing (DSP).
    - Details: Developed a robust algorithm in MATLAB for automated QRS complex detection and Heart Rate Variability (HRV) analysis.
    - Processing: Implemented digital filters (Band-pass) to eliminate motion artifacts and 50Hz power-line interference.
    - Analysis: Automated clinical feature extraction and BPM calculation from physiological recordings.
-   - Design: Multi-articulated mechanical hand mechanism mimicking anatomical joint movements (finger joints, knuckles).
-   - Engineering: Performed tolerance analysis to ensure fit and function across assembly components.
-   - Output: Full assembly files (.SLDASM) designed for 3D printing manufacturing.
+   
 
 [SKILLS]
 - Technical: Python, PyTorch, OpenCV, MediaPipe, fastai, nibabel, pydicom, SolidWorks, MATLAB, Excel, SharePoint.
