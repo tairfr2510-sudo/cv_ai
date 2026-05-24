@@ -491,7 +491,6 @@ PROJECT-TO-DOMAIN MATCHING GUIDE (follow this strictly):
 
 For each selected project write exactly 3 bullets:
 - MIN ONE FULL LINE per bullet Max 20 words per bullet
-- Format: Strong Action Verb + specific technical detail (tool/algorithm/mechanism) + outcome
 - Embed exact JD keywords naturally
 - NEVER invent tools, metrics, or results not in the Fact Sheet
 
