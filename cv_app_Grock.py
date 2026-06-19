@@ -643,6 +643,17 @@ if "analysis" in st.session_state:
             else:
                 st.success("No major gaps.")
 
+# === הוספת קוד ה-LaTeX המלא להעתקה ===
+latex_content_full = LATEX_TEMPLATE
+for section_key, section_content in st.session_state.generated_sections.items():
+    latex_content_full = latex_content_full.replace(f"{{{{{section_key}}}}}", section_content)
+        
+with st.expander("📋 קוד LaTeX מלא להעתקה (לחץ על כפתור ההעתקה בצד ימין)", expanded=True):
+    st.code(latex_content_full, language="latex")
+# ======================================
+
+st.markdown("<br>", unsafe_allow_html=True)
+
 # ============ RESUME PREVIEW + PDF ============
 if "generated_sections" in st.session_state:
     st.markdown("<hr>", unsafe_allow_html=True)
