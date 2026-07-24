@@ -403,7 +403,7 @@ with col2:
     st.markdown("### 🎓 Courses Pool")
     courses_input = st.text_area(
         "Courses the AI can select from (comma separated):",
-        value="Introduction to Computing with Python (100), Biological Fluid Mechanics (100), Physics 1M (100), Differential and Integral Calculus 1M2 (99), Directions in Biomedical Engineering (97), Introduction to Human Anatomy (97), Partial Differential Equations/T (96), Physical Chemistry 1B (96), Fundamentals of Medical Materials (96), Metabolic Pathways (96), Physics 2 (95), From Cells to Tissues (94), Introduction to Probability H (93), General Chemistry (92), Laboratory in Bio-Medical Engineering 1 (92), Body Systems Physiology for Engineers (92), Signals and Systems (91)",
+        value="Introduction to Computing with Python (100), Biological Fluid Mechanics (100), Biomechanical Design (90),  Physics 1M (100), Differential and Integral Calculus 1M2 (99), Directions in Biomedical Engineering (97), Introduction to Human Anatomy (97), Partial Differential Equations/T (96), Physical Chemistry 1B (96), Fundamentals of Medical Materials (96), Metabolic Pathways (96), Physics 2 (95), From Cells to Tissues (94), Introduction to Probability H (93), General Chemistry (92), Laboratory in Bio-Medical Engineering 1 (92), Body Systems Physiology for Engineers (92), Signals and Systems (91)",
         height=320,
         key="courses_input",
         label_visibility="collapsed"
