@@ -403,7 +403,7 @@ with col2:
     st.markdown("### 🎓 Courses Pool")
     courses_input = st.text_area(
         "Courses the AI can select from (comma separated):",
-        value="Python (100), Biological Fluid Mechanics (100), Biomechanical Design (90), Physical Chemistry - Thermodynamics (96), Medical Materials (96), Probability (93), Signals and Systems (91)",
+        value="Python (100), Biological Fluid Mechanics (100), Biomechanical Design (90), Physical Chemistry - Thermodynamics (96), Medical Materials (96), Probability (93), Signals and Systems (91), Bioelectrical Design - Circuit Design and Semiconductors (92), Statistics (90)",
         height=320,
         key="courses_input",
         label_visibility="collapsed"
