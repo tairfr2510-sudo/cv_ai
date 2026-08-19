@@ -38,7 +38,7 @@ def build_projects_latex(selected_projects):
             "title": r"\textbf{AI-Powered MRI/CT Diagnostic \& 3D Reconstruction Platform} \hfill \href{https://github.com/tairfr2510-sudo/MRAI-Tumor-Segmentation-3D-Export-Engine}{\uline{GitHub}}"
         },
         "XRAY": {
-            "title": r"\textbf{Autonomous X-ray Targeting \& Positioning System} \hfill \href{https://aistudio.google.com/apps/e4bd7e56-afa3-41d2-984a-88577243b839?fullscreenApplet=true&showPreview=true&showAssistant=true}{\uline{Demo}}"
+            "title": r"\textbf{Autonomous X-ray Targeting \& Positioning System} \hfill \href{https://smart-x-ray-targeting.ai.studio}{\uline{Demo}}"
         },
         "MECH": {
             "title": r"\textbf{Mechanical Hand Design \& Modeling (SolidWorks Project)}"
