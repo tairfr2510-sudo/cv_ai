@@ -1,0 +1,131 @@
+# Single source of truth about the candidate (job_agent PLAN.md, D13).
+# Read by cv_engine.py — used by both the Streamlit app and job_agent.
+#
+# Fields ending in `_tex` are inserted into the LaTeX verbatim (escape & % $ # _ yourself).
+# Every other field is plain text and is escaped automatically.
+
+personal:
+  name: Tair Fridman
+  headline: Fourth Year Biomedical Engineering Student at the Technion
+  phone: 054-9988143
+  email: tairfr2510@gmail.com
+  linkedin: http://www.linkedin.com/in/tairfridman
+  portfolio: https://technionmail-my.sharepoint.com/:f:/g/personal/tair_fridman_campus_technion_ac_il/IgB6kjkw2NY_Q7lWN8LxAKPkAZNCp29HqfC-8IRGrvIwpbQ?e=Adc87l
+
+# How the career objective should introduce the candidate.
+identity: Biomedical Engineering student, Technion
+
+education:
+  degree: B.Sc. in Biomedical Engineering (In Progress)
+  dates: 2023 -- Expected 2028
+  institution: Technion - Israel Institute of Technology
+  fact: 4th-year B.Sc. in Biomedical Engineering, Technion - Israel Institute of Technology (expected graduation 2028).
+  gpa: 91
+  honors: "Dean's List (Winter 2024, Spring 2025, Winter 2026)."
+  bullets_tex:
+    - "Dean's List (Academic Excellence): Winter 2024, Spring 2025, Winter 2026."
+    - 'T2MED Hackathon Finalist \&  Team Leader\textbf{ :} Collaborated in a multidisciplinary team to design and pitch a technology-driven solution for real-world medical problems.'
+
+# The AI picks the 3 most relevant for each job. Exact names and grades.
+courses:
+  - Python (100)
+  - Biological Fluid Mechanics (100)
+  - Biomechanical Design (90)
+  - Physical Chemistry - Thermodynamics (96)
+  - Medical Materials (96)
+  - Probability (93)
+  - Signals and Systems (91)
+  - Bioelectrical Design - Circuit Design and Semiconductors (92)
+  - Statistics (90)
+
+experience:
+  title: 3D Printer Operator (Meat-Replacement Printing)
+  role_short: 3D Printer Operator
+  company: Redefinemeat
+  location: Rehovot
+  dates_fact: 06/2022 - 07/2023
+  dates_tex: 06/2022 -- 07/2023
+  facts:
+    - "Responsibilities: Operated and optimized industrial 3D printers for food-tech meat-substitute production."
+    - "Achievement 1: Initiated and built a SharePoint knowledge base for the printing team from scratch, centralizing documentation and improving cross-shift productivity."
+    - "Achievement 2: Implemented Excel-based data tracking and analysis system to monitor print quality metrics and enhance work quality."
+    - "Achievement 3: Collaborated directly with the R&D team on troubleshooting printer failures and co-developing improved printing protocols."
+    - "Achievement 4: Managed full technical and operational processes including equipment calibration, fault diagnosis, and protocol development."
+
+# The AI selects exactly 2 projects per job. Order here = fallback order.
+projects:
+  - id: MRAI
+    title: AI-Powered MRI/CT Diagnostic & 3D Reconstruction Platform
+    link: {label: GitHub, url: "https://github.com/tairfr2510-sudo/MRAI-Tumor-Segmentation-3D-Export-Engine"}
+    facts:
+      - "Tech Stack: Python, PyTorch, fastai, nibabel, pydicom, scipy, scikit-image, numpy-stl, fpdf, Tkinter, matplotlib."
+      - "Data Pipeline: Built DICOM loader with spatial sorting via ImageOrientationPatient cross-product (slice normal vector); NIfTI loader via nibabel. Aspect-ratio correction using PixelSpacing + SliceThickness via scipy.ndimage.zoom."
+      - "AI Model: 3D U-Net (PyTorch/fastai) for automated brain tumor segmentation. Outputs: tumor confidence %, Z-slice range, peak slice index, 3D binary mask, centroid coordinates (x,y)."
+      - "3D Reconstruction: Gaussian filter (σ=1) → Marching Cubes (skimage.measure) with physical voxel spacing → STL export (numpy-stl). Tumor volume computed via get_mass_properties() in cm³."
+      - "MPR Viewer: Synchronized Axial/Coronal/Sagittal crosshairs with click-to-navigate between planes. Supports rotation, zoom, colormap switching (gray/hot/viridis/inferno)."
+      - "DSP Module: FFT high-pass filter + Unsharp Masking (α=1.5) for edge enhancement."
+      - "PDF Report: Auto-generated clinical report via fpdf with AI findings + orthogonal slice screenshots."
+      - "Architecture: Non-blocking AI analysis via threading.Thread; GUI built with Tkinter + matplotlib TkAgg backend."
+
+  - id: XRAY
+    title: Autonomous X-ray Targeting & Positioning System
+    fact_title: Autonomous X-Ray Targeting & Positioning System
+    link: {label: Demo, url: "https://smart-x-ray-targeting.ai.studio"}
+    facts:
+      - "Tech Stack: Python, OpenCV, MediaPipe PoseLandmarker, Tkinter, threading, pynput, math."
+      - "State Machine: 4-state visual servoing: IDLE → MACRO_MOVE (error >100px, step=15px) → MICRO_CENTER (error ≤100px & >20px, step=3px) → READY (error ≤20px tolerance)."
+      - "Computer Vision: MediaPipe PoseLandmarker (33 landmarks, visibility threshold >0.3) for real-time pose detection at 1280×720, 30fps."
+      - "NLP: Hebrew free-text input parsed to 13 anatomical targets (chest, head, abdomen, bilateral shoulder/elbow/wrist/hip/knee/ankle) via keyword mapping."
+      - "Dynamic Zoom: 4x zoom via crop-and-resize (not digital zoom), centered on detected target; crosshair locked at frame center."
+      - "Angle Calculation: atan2-based limb angle computation for X-ray tube rotation alignment."
+      - "Medical Protocols: Auto-detects clinical condition from text (fracture→AP+Lateral 0°+90°, sprain→Mortise 15-20°, fluid→Weight-bearing, foreign body→Tangential multi-angle)."
+      - "Image Enhancement: CLAHE (clipLimit=3.0, tileGridSize=8×8) applied to final scan frame."
+      - "Output: Motor command string (direction + error px), tube tilt angle, rotation angle; X-ray simulation saved as JPG."
+      - "UX: Recording mode — state machine activates only on RECORD button press; STOP pauses at current position."
+
+  - id: MECH
+    title: Mechanical Hand Design & Modeling (SolidWorks Project)
+    fact_title: Mechanical Hand Design & Modeling
+    facts:
+      - "Tool: SolidWorks (CAD/CAM)."
+      - "Design: Multi-articulated mechanical hand mechanism mimicking anatomical joint movements (finger joints, knuckles)."
+      - "Engineering: Performed tolerance analysis to ensure fit and function across assembly components."
+      - "Output: Full assembly files (.SLDASM) designed for 3D printing manufacturing."
+
+  - id: ECG
+    title: ECG Signal Processing & Automated QRS Detection
+    link: {label: GitHub, url: "https://github.com/tairfr2510-sudo/ECG-Signal-Processing-QRS-Detection.git"}
+    facts:
+      - "Tech Stack: MATLAB, Digital Signal Processing (DSP)."
+      - "Details: Developed a robust algorithm in MATLAB for automated QRS complex detection and Heart Rate Variability (HRV) analysis."
+      - "Processing: Implemented digital filters (Band-pass) to eliminate motion artifacts and 50Hz power-line interference."
+      - "Analysis: Automated clinical feature extraction and BPM calculation from physiological recordings."
+
+# Rules the AI follows to pick 2 projects for a JD (shown verbatim, in this order).
+# When adding a project, add its line here too.
+matching_guide:
+  - "JD mentions mechanical / machinery / manufacturing / CAD / SolidWorks / assembly / production / tolerance / machine design / mechatronics → MECH is your FIRST choice"
+  - "JD mentions AI / machine learning / deep learning / medical imaging / DICOM / segmentation / neural network / image processing → MRAI is your first choice , best project gets priority "
+  - "JD mentions robotics / automation / computer vision / embedded / real-time / sensors / positioning / motion control → XRAY is your first choice"
+  - "JD mentions signal processing / DSP / MATLAB / ECG / algorithms / heart rate / biomedical signals / physiological data → ECG is your first choice"
+  - "When two domains overlap, pick the best two. NEVER default to MRAI+XRAY just because they seem more impressive — match the JD domain."
+
+# Few-shot quality standard shown to the AI for project bullets.
+bullet_examples:
+  - weak: Implemented a U-Net model for tumor detection.
+    strong: Engineered a 3D U-Net (PyTorch/fastai) for automated brain tumor segmentation, outputting confidence score, Z-slice range, and 3D binary mask.
+  - weak: Built a system for X-ray targeting using computer vision.
+    strong: Designed a 4-state visual servoing pipeline (IDLE→MACRO→MICRO→READY) using MediaPipe and OpenCV, achieving ±20px anatomical centering precision.
+  - weak: Designed a mechanical hand in SolidWorks.
+    strong: Modeled a multi-articulated mechanical hand in SolidWorks, mimicking anatomical joint kinematics, with full tolerance analysis and assembly files for 3D printing.
+
+military:
+  heading_tex: "\\textbf{Soldier in the special unit ``Dia''} --- \\textbf{869th Combat Collection Battalion}"
+  bullets_tex:
+    - Received excellence recognition in training and granted a parachute course as a prize.
+    - "Selected for the commanders' training course, Trainees commander, commander in operational line."
+    - "Team Sergeant (Operational Line): Led the team in the absence of the team leader, made critical decisions under pressure, and oversaw soldiers while managing the team logistics."
+
+skills:
+  technical: Python, PyTorch, OpenCV, MediaPipe, fastai, nibabel, pydicom, SolidWorks, MATLAB, Excel, SharePoint.
+  soft: Analytical Thinking, Quick Learner, Team Leadership, Problem Solving, Cross-functional Collaboration.
