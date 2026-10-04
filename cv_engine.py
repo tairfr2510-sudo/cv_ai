@@ -429,7 +429,8 @@ Available upon request.
                     "datasets or results. Keep everything else. Return the full JSON object again."
                 )},
             ]
-            _, data = self._chat(messages)
+            _, fixed = self._chat(messages)
+            data = {**data, **fixed}  # the retry sometimes returns only the rewritten keys
             issues = self.find_invented_numbers(data, job_description, allowed_courses)
 
         # One-page content trimmer
