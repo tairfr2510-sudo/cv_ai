@@ -6,7 +6,9 @@
 
 personal:
   name: Tair Fridman
-  headline: Fourth-Year Biomedical Engineering Student, Technion · Research Assistant at the Technion MRI Lab
+  headline:   # one line each, centred under the name
+    - Fourth-Year Biomedical Engineering Student, Technion
+    - Research Assistant at the Technion MRI Lab
   phone: 054-9988143
   email: tairfr2510@gmail.com
   linkedin: http://www.linkedin.com/in/tairfridman

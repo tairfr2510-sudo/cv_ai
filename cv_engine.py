@@ -13,6 +13,7 @@ import os
 import re
 import subprocess
 import tempfile
+import time
 from pathlib import Path
 
 import yaml
@@ -328,8 +329,10 @@ Return ONLY a raw JSON object with these exact keys:
         header = (
             r"    {\Huge \textbf{" + escape_latex(per["name"].upper()) + r"}} \\" + "\n"
             r"    \vspace{4pt}" + "\n"
-            r"    {\small \textbf{" + escape_latex(per["headline"]) + r"}} \\" + "\n"
-            r"    \vspace{4pt}" + "\n"
+            # headline: one string, or a list = one centred line each
+            + "".join(r"    \textbf{" + escape_latex(line) + r"} \\" + "\n"
+                      for line in ([per["headline"]] if isinstance(per["headline"], str) else per["headline"]))
+            + r"    \vspace{4pt}" + "\n"
             f"    {per['phone']}  $|$ {per['email']} $|$ "
             r"{ \href{" + per["linkedin"] + r"}{\uline{Linkedin}}} $|$ "
             r"\href{" + per["portfolio"] + r"}{\uline{Project Portfolio}}"
@@ -422,13 +425,29 @@ Return ONLY a raw JSON object with these exact keys:
             self._client = Groq(api_key=self.api_key)
         return self._client
 
-    def _chat(self, messages):
-        completion = self.client.chat.completions.create(
-            messages=messages,
-            model=self.model,
-            temperature=0.2,
-            response_format={"type": "json_object"},
-        )
+    @staticmethod
+    def _retry_after(error):
+        """Seconds Groq asks us to wait ("try again in 1m2.5s"), or None."""
+        m = re.search(r"try again in (?:(\d+)m)?([\d.]+)s", str(error))
+        return m and int(m.group(1) or 0) * 60 + float(m.group(2))
+
+    def _chat(self, messages, max_wait=90):
+        """One JSON chat call. A per-minute rate limit (short wait) is waited out once more; a long wait
+        (the daily token quota) is raised right away."""
+        for attempt in range(3):
+            try:
+                completion = self.client.chat.completions.create(
+                    messages=messages,
+                    model=self.model,
+                    temperature=0.2,
+                    response_format={"type": "json_object"},
+                )
+                break
+            except Exception as e:  # noqa: BLE001 — groq.RateLimitError, without importing groq at module level
+                wait = self._retry_after(e) if type(e).__name__ == "RateLimitError" else None
+                if wait is None or wait > max_wait or attempt == 2:
+                    raise
+                time.sleep(wait + 2)
         raw_text = completion.choices[0].message.content
         match = re.search(r'\{.*\}', raw_text, re.DOTALL)
         return raw_text, json.loads(match.group(0) if match else raw_text)
