@@ -6,7 +6,7 @@
 
 personal:
   name: Tair Fridman
-  headline: Fourth Year Biomedical Engineering Student at the Technion
+  headline: Fourth-Year Biomedical Engineering Student, Technion · Research Assistant at the Technion MRI Lab
   phone: 054-9988143
   email: tairfr2510@gmail.com
   linkedin: http://www.linkedin.com/in/tairfridman
@@ -39,19 +39,55 @@ courses:
   - Bioelectrical Design - Circuit Design and Semiconductors (92)
   - Statistics (90)
 
+# Jobs, newest first — all of them always appear on the CV. For each job the AI writes `bullets`
+# bullets (a number, or [min, max]) chosen from its `facts`, following its `matching` rules.
+# Only what is written in `facts` may be claimed; add results/numbers here when you have them.
 experience:
-  title: 3D Printer Operator (Meat-Replacement Printing)
-  role_short: 3D Printer Operator
-  company: Redefinemeat
-  location: Rehovot
-  dates_fact: 06/2022 - 07/2023
-  dates_tex: 06/2022 -- 07/2023
-  facts:
-    - "Responsibilities: Operated and optimized industrial 3D printers for food-tech meat-substitute production."
-    - "Achievement 1: Initiated and built a SharePoint knowledge base for the printing team from scratch, centralizing documentation and improving cross-shift productivity."
-    - "Achievement 2: Implemented Excel-based data tracking and analysis system to monitor print quality metrics and enhance work quality."
-    - "Achievement 3: Collaborated directly with the R&D team on troubleshooting printer failures and co-developing improved printing protocols."
-    - "Achievement 4: Managed full technical and operational processes including equipment calibration, fault diagnosis, and protocol development."
+  - id: MRILAB
+    title: Research Assistant (Student)
+    role_short: Research Assistant
+    company: MedAILab – Technion MRI
+    location: Faculty of Electrical Engineering, Technion
+    dates_fact: 07/2026 - Present
+    dates_tex: 07/2026 -- Present
+    bullets: [3, 4]
+    # One line for job_agent's relevance scoring (not printed on the CV)
+    summary: "Python tool that turns brain MRI into 3D-printable phantoms (K-Means tissue segmentation, STL generation); SolidWorks and 3D printing; gel-based tissue-mimicking phantoms; supports T1/T2 MRI scans and SNR analysis."
+    facts:
+      - "Tech Stack: Python, nibabel, scikit-image, scikit-learn, scipy, shapely, trimesh, Tkinter, matplotlib, SolidWorks, 3D printing."
+      - "Phantom Generator: Developed a Python desktop tool (Tkinter GUI) that turns brain MRI scans (NIfTI) into 3D-printable phantom models, automating the path from scan to physical model for the lab's MRI experiments."
+      - "Segmentation: Automatic segmentation of brain tissues (gray matter, white matter, CSF) using Otsu thresholding and unsupervised machine learning (K-Means clustering)."
+      - "Contour Editing: Interactive editing of the extracted tissue contours, with mm-accurate wall-distance measurement, collision highlighting and undo history."
+      - "3D Modeling: Automatic generation of print-ready 3D meshes (STL) with configurable wall thickness and height, optional mounting onto a custom base, and a guaranteed minimum gap between walls for printability."
+      - "Fabrication: 3D-printed brain phantoms for MRI research."
+      - "CAD: Designed lab equipment and phantom assemblies in SolidWorks."
+      - "Wet Lab: Prepared gel-based tissue-mimicking solutions in a chemical fume hood, following lab safety protocols."
+      - "MRI: Supported T1/T2 MRI scanning of gel-filled phantoms at the Technion MRI lab."
+      - "Analysis: Evaluated the image quality of phantom scans using signal-to-noise ratio (SNR) and signal-quality analysis."
+      - "Experiment Design: Planned phantom experiments end-to-end, from MRI data through printed phantom to scan and analysis."
+    matching:
+      - "JD about algorithms / AI / machine learning / image processing / software → use the Phantom Generator, Segmentation, 3D Modeling and Analysis facts."
+      - "JD about medical devices / mechanical / R&D / manufacturing → use the Fabrication, CAD, Wet Lab and Experiment Design facts (mention the Phantom Generator briefly)."
+      - "JD about MRI / medical imaging / research / lab → use the MRI, Analysis and Experiment Design facts plus the Phantom Generator or Segmentation."
+      - "Write clear, recruiter-friendly bullets (what you did + how + what for); leave low-level details like Otsu or the minimum wall gap out unless the JD asks for them."
+
+  - id: REDEFINE
+    title: 3D Printer Operator (Meat-Replacement Printing)
+    role_short: 3D Printer Operator
+    company: Redefinemeat
+    location: Rehovot
+    dates_fact: 06/2022 - 07/2023
+    dates_tex: 06/2022 -- 07/2023
+    bullets: 2
+    summary: "Operated and optimized industrial 3D printers; worked with R&D on printing protocols, calibration and fault diagnosis; built quality-tracking in Excel."
+    facts:
+      - "Responsibilities: Operated and optimized industrial 3D printers for food-tech meat-substitute production."
+      - "Achievement 1: Initiated and built a SharePoint knowledge base for the printing team from scratch, centralizing documentation and improving cross-shift productivity."
+      - "Achievement 2: Implemented Excel-based data tracking and analysis system to monitor print quality metrics and enhance work quality."
+      - "Achievement 3: Collaborated directly with the R&D team on troubleshooting printer failures and co-developing improved printing protocols."
+      - "Achievement 4: Managed full technical and operational processes including equipment calibration, fault diagnosis, and protocol development."
+    matching:
+      - "Pick the 2 achievements closest to the JD (R&D collaboration and protocols for engineering roles; data tracking for analysis roles; calibration and fault diagnosis for hardware/manufacturing roles)."
 
 # The AI selects exactly 2 projects per job. Order here = fallback order.
 projects:
@@ -119,6 +155,10 @@ bullet_examples:
     strong: Designed a 4-state visual servoing pipeline (IDLE→MACRO→MICRO→READY) using MediaPipe and OpenCV, achieving ±20px anatomical centering precision.
   - weak: Designed a mechanical hand in SolidWorks.
     strong: Modeled a multi-articulated mechanical hand in SolidWorks, mimicking anatomical joint kinematics, with full tolerance analysis and assembly files for 3D printing.
+  - weak: Wrote a program that makes STL files from MRI with Otsu and a minimum wall gap.
+    strong: Developed a Python tool that turns brain MRI scans into 3D-printable phantom models for the lab's MRI experiments.
+  - weak: Worked on phantoms, gels and MRI scans in the lab.
+    strong: Developed tissue-mimicking brain phantoms end-to-end, from MRI segmentation through SolidWorks design to 3D printing.
 
 military:
   heading_tex: "\\textbf{Soldier in the special unit ``Dia''} --- \\textbf{869th Combat Collection Battalion}"
@@ -128,5 +168,5 @@ military:
     - "Team Sergeant (Operational Line): Led the team in the absence of the team leader, made critical decisions under pressure, and oversaw soldiers while managing the team logistics."
 
 skills:
-  technical: Python, PyTorch, OpenCV, MediaPipe, fastai, nibabel, pydicom, SolidWorks, MATLAB, Excel, SharePoint.
+  technical: Python, PyTorch, scikit-learn, scikit-image, OpenCV, MediaPipe, fastai, nibabel, pydicom, trimesh, SolidWorks, 3D Printing, MRI (T1/T2), MATLAB, Excel, SharePoint.
   soft: Analytical Thinking, Quick Learner, Team Leadership, Problem Solving, Cross-functional Collaboration.

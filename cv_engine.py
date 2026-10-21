@@ -45,6 +45,8 @@ _MATH_SYMBOLS = {
     "≤": r"$\leq$", "≥": r"$\geq$", "≈": r"$\approx$", "≠": r"$\neq$",
     "α": r"$\alpha$", "β": r"$\beta$", "γ": r"$\gamma$", "δ": r"$\delta$", "Δ": r"$\Delta$",
     "θ": r"$\theta$", "λ": r"$\lambda$", "μ": r"$\mu$", "π": r"$\pi$", "σ": r"$\sigma$", "ω": r"$\omega$",
+    # the LLM likes non-breaking hyphens/spaces ("3D‑printable"); older TeX Live (CI) has no glyph set up for them
+    "‑": "-", "‐": "-", " ": "~", " ": " ", " ": " ",
 }
 
 
@@ -96,6 +98,18 @@ def _itemize(items_tex):
     return latex + r"\end{itemize}"
 
 
+def experience_jobs(profile):
+    """profile['experience'] as a list of jobs, newest first, each with an id and a (min, max) bullet count.
+    A single job written as a mapping (the old profile format) still works."""
+    raw = profile["experience"]
+    jobs = []
+    for i, job in enumerate([raw] if isinstance(raw, dict) else raw):
+        n = job.get("bullets", 4)
+        lo, hi = (n, n) if isinstance(n, int) else (int(n[0]), int(n[-1]))
+        jobs.append({**job, "id": str(job.get("id") or f"JOB{i + 1}"), "min_bullets": lo, "max_bullets": hi})
+    return jobs
+
+
 class CVEngine:
     def __init__(self, profile_path=DEFAULT_PROFILE, api_key=None, model=DEFAULT_MODEL):
         self.profile = yaml.safe_load(Path(profile_path).read_text(encoding="utf-8"))
@@ -103,13 +117,14 @@ class CVEngine:
         self.model = model
         self._client = None
         self.projects = {p["id"]: p for p in self.profile["projects"]}
+        self.jobs = experience_jobs(self.profile)
         self.courses = list(self.profile["courses"])
         self.template = self._build_template()
 
     # ---------- profile → text ----------
     def fact_sheet(self):
         p = self.profile
-        edu, exp = p["education"], p["experience"]
+        edu = p["education"]
         lines = [
             "[PERSONAL & ACADEMIC]",
             f"- Name: {p['personal']['name']}",
@@ -118,11 +133,16 @@ class CVEngine:
             f"- Honors: {edu['honors']}",
             f"- Key Coursework: {', '.join(self.courses)}.",
             "",
-            "[PROFESSIONAL EXPERIENCE]",
-            f"- Role: {exp['title']}",
-            f"- Company: {exp['company']}, {exp['location']} ({exp['dates_fact']})",
-            *[f"- {f}" for f in exp["facts"]],
-            "",
+            "[PROFESSIONAL EXPERIENCE] (newest first)",
+        ]
+        for job in self.jobs:
+            lines += [
+                f"{job['title']} (ID: {job['id']}):",
+                f"   - Company: {job['company']}, {job['location']} ({job['dates_fact']})",
+                *[f"   - {f}" for f in job["facts"]],
+                "",
+            ]
+        lines += [
             "[ENGINEERING PROJECTS]",
         ]
         for i, proj in enumerate(p["projects"], 1):
@@ -139,13 +159,22 @@ class CVEngine:
     def build_prompt(self, job_description, allowed_courses=None):
         p = self.profile
         allowed_courses_text = ", ".join(allowed_courses or self.courses)
-        exp = p["experience"]
         ids = ", ".join(f'"{pid}"' for pid in self.projects)
         match_guide = "\n".join(f"- {rule}" for rule in p.get("matching_guide", []))
         examples = "\n\n".join(
             f"❌ WEAK: \"{ex['weak']}\"\n✅ STRONG: \"{ex['strong']}\"" for ex in p.get("bullet_examples", [])
         )
-        n_achievements = sum(1 for f in exp["facts"] if f.startswith("Achievement"))
+        count = lambda j: str(j["min_bullets"]) if j["min_bullets"] == j["max_bullets"] else f"{j['min_bullets']}-{j['max_bullets']}"  # noqa: E731
+        job_steps = "\n\n".join(
+            f"{job['id']} — {job['title']} at {job['company']}: EXACTLY {count(job)} bullets, max 20 words each.\n"
+            f"Reframe the {job.get('role_short', job['title'])} role to match this JD's domain, using only this job's facts."
+            + "".join(f"\n- {rule}" for rule in job.get("matching", []))
+            for job in self.jobs
+        )
+        experience_example = ", ".join(
+            json.dumps({"id": job["id"], "bullets": [f"Bullet {i}" for i in range(1, job["max_bullets"] + 1)]})
+            for job in self.jobs
+        )
 
         return f"""
 You are an expert resume writer and ATS optimization specialist.
@@ -173,7 +202,7 @@ Score the candidate's raw resume against the JD on a 0-100 scale. Be honest and 
 STEP 3 — CAREER OBJECTIVE:
 Write a 4-5 line career objective (max 70 words) that:
 - Opens with the candidate's identity ({p['identity']})
-- Highlights the 2 most relevant projects for this JD
+- Highlights the 2 most relevant projects for this JD, and the current role when it fits the JD
 - Embeds exact ATS keywords from the JD naturally
 - Uses industry-specific language (manufacturing / engineering / medical / software — match the JD's domain)
 - Is professional, concise, and does NOT hallucinate
@@ -195,14 +224,18 @@ For each selected project write exactly 3 bullets:
 - MIN ONE FULL LINE per bullet Max 20 words per bullet
 - Embed exact JD keywords naturally
 - NEVER invent tools, metrics, or results not in the Fact Sheet
+- Use ONLY that project's own facts. Never move facts between projects and jobs, even similar ones
+  (e.g. the lab's phantom tool belongs to the lab job, not to the MRAI project)
 
 FEW-SHOT QUALITY STANDARD (imitate this level of specificity):
 
 {examples}
 
-STEP 6 — EXPERIENCE BULLETS ({exp['company']}, EXACTLY 4 bullets important, max 15 words each):
-Reframe the {exp['role_short']} role to match this JD's domain.
-Use the {n_achievements} achievement facts in the Fact Sheet. Same quality standard: specific, action-oriented, no hallucination.
+STEP 6 — EXPERIENCE BULLETS (every job below appears on the CV, in this order):
+Same quality standard as the projects: specific, action-oriented, no hallucination. Pick the facts that best match the JD.
+Rephrase and combine facts, but add nothing they do not state — not even a plausible-sounding purpose or result.
+
+{job_steps}
 
 STEP 7 — SKILLS:
 Group into exactly 2 categories:
@@ -214,6 +247,9 @@ Re-score the improved resume against the JD. Estimate the improvement.
 
 === CRITICAL RULES ===
 - Do NOT invent experience, tools, metrics, or results
+- Do NOT invent purposes, outcomes or impact either (e.g. "optimizing protocols", "verification testing", "improving reliability",
+  "enabling rapid prototyping") — a bullet may only say what a fact says; its "what for" must also come from the facts
+- Do NOT inflate the role: no "Led", "Spearheaded", "Proven", "senior" unless a fact says so
 - Do NOT add LaTeX commands (no \\textbf, \\begin, \\item etc.) — plain text only inside JSON values
 - Do NOT use Markdown formatting or ```json blocks
 
@@ -228,7 +264,7 @@ Return ONLY a raw JSON object with these exact keys:
         {{"id": "MRAI", "bullets": ["Bullet 1", "Bullet 2", "Bullet 3"]}},
         {{"id": "XRAY", "bullets": ["Bullet 1", "Bullet 2", "Bullet 3"]}}
     ],
-    "EXPERIENCE_BULLETS": ["Bullet 1", "Bullet 2", "Bullet 3"],
+    "EXPERIENCE": [{experience_example}],
     "JD_KEYWORDS_USED": ["keyword1", "keyword2", "keyword3"],
     "MISSING_KEYWORDS": ["keyword1", "keyword2"],
     "ATS_SCORE_BEFORE": 65,
@@ -256,14 +292,26 @@ Return ONLY a raw JSON object with these exact keys:
             latex += _itemize(escape_latex(b) for b in bullets[:3]) + "\n\n"
         return latex.strip() + "\n"
 
-    def build_experience_latex(self, exp_bullets):
-        """בונה את קוד ה-LaTeX לניסיון, שומר על הכותרת קשיחה"""
-        if not exp_bullets:
-            return ""
-        exp = self.profile["experience"]
-        latex = r"\textbf{" + escape_latex(exp["title"]) + r"} \hfill " + exp["dates_tex"] + r" \newline" + "\n"
-        latex += f"{escape_latex(exp['company'])}, {escape_latex(exp['location'])}\n"
-        return latex + _itemize(escape_latex(b) for b in exp_bullets) + "\n"
+    def build_experience_latex(self, experience):
+        """בונה את קוד ה-LaTeX לניסיון, שומר על הכותרות קשיחות.
+        `experience` maps job id → bullets; jobs keep the profile's order, a job without bullets is left out."""
+        blocks = []
+        for job in self.jobs:
+            bullets = experience.get(job["id"]) or []
+            if not bullets:
+                continue
+            latex = r"\textbf{" + escape_latex(job["title"]) + r"} \hfill " + job["dates_tex"] + r" \newline" + "\n"
+            latex += f"{escape_latex(job['company'])}, {escape_latex(job['location'])}\n"
+            blocks.append(latex + _itemize(escape_latex(b) for b in bullets) + "\n")
+        return "\n".join(blocks)
+
+    def experience_bullets(self, data):
+        """Job id → bullets from the LLM answer, trimmed to each job's maximum.
+        Also accepts the old single-job key EXPERIENCE_BULLETS (→ first job)."""
+        raw = {str(e.get("id")): e.get("bullets", []) for e in data.get("EXPERIENCE", []) if isinstance(e, dict)}
+        if not raw and data.get("EXPERIENCE_BULLETS"):
+            raw = {self.jobs[0]["id"]: data["EXPERIENCE_BULLETS"]}
+        return {job["id"]: trim_bullets(raw.get(job["id"], []), job["max_bullets"], 20) for job in self.jobs}
 
     @staticmethod
     def build_skills_latex(skills_dict):
@@ -280,7 +328,7 @@ Return ONLY a raw JSON object with these exact keys:
         header = (
             r"    {\Huge \textbf{" + escape_latex(per["name"].upper()) + r"}} \\" + "\n"
             r"    \vspace{4pt}" + "\n"
-            r"    \textbf{" + escape_latex(per["headline"]) + r"} \\" + "\n"
+            r"    {\small \textbf{" + escape_latex(per["headline"]) + r"}} \\" + "\n"
             r"    \vspace{4pt}" + "\n"
             f"    {per['phone']}  $|$ {per['email']} $|$ "
             r"{ \href{" + per["linkedin"] + r"}{\uline{Linkedin}}} $|$ "
@@ -298,7 +346,7 @@ Return ONLY a raw JSON object with these exact keys:
 % Packages for formatting
 \usepackage{ulem}
 \usepackage[utf8]{inputenc}
-\usepackage[left=0.75in,top=0.6in,right=0.75in,bottom=0.6in]{geometry}
+\usepackage[left=0.75in,top=0.5in,right=0.75in,bottom=0.5in]{geometry}
 \usepackage{titlesec}
 \usepackage{enumitem}
 \usepackage{hyperref}
@@ -309,7 +357,7 @@ Return ONLY a raw JSON object with these exact keys:
 
 % Title Formatting
 \titleformat{\section}{\large\bfseries\uppercase}{}{0pt}{}[\titlerule]
-\titlespacing{\section}{0pt}{10pt}{5pt}
+\titlespacing{\section}{0pt}{8pt}{4pt}
 
 % Document Start
 \begin{document}
@@ -355,10 +403,6 @@ Return ONLY a raw JSON object with these exact keys:
 \section{Skills}
 {{SKILLS_SECTION}}
 
-% References
-\section{References}
-Available upon request.
-
 \end{document}
 """
 
@@ -389,6 +433,118 @@ Available upon request.
         match = re.search(r'\{.*\}', raw_text, re.DOTALL)
         return raw_text, json.loads(match.group(0) if match else raw_text)
 
+    REQUIRED_KEYS = ("CAREER_OBJECTIVE", "KEY_COURSES", "SELECTED_PROJECTS", "EXPERIENCE", "SKILLS")
+
+    def _item_facts(self, kind, item_id):
+        """The facts a bullet of this project/job may use (None for unknown ids)."""
+        if kind == "SELECTED_PROJECTS":
+            proj = self.projects.get(item_id)
+            return proj and proj["facts"]
+        job = next((j for j in self.jobs if j["id"] == item_id), None)
+        return job and [f"{job['title']} at {job['company']} ({job['dates_fact']})", *job["facts"]]
+
+    def _statements(self, data):
+        """(where, item key, text) for every claim the CV makes; item key = (kind, id) whose facts must back it."""
+        out = [(("CAREER_OBJECTIVE",), ("CAREER_OBJECTIVE", None), data.get("CAREER_OBJECTIVE", ""))]
+        for kind in ("SELECTED_PROJECTS", "EXPERIENCE"):
+            for i, item in enumerate(data.get(kind, [])):
+                if isinstance(item, dict):
+                    out += [((kind, i, k), (kind, str(item.get("id"))), b) for k, b in enumerate(item.get("bullets", []))]
+        return [s for s in out if isinstance(s[2], str) and s[2].strip()]
+
+    # Trailing ", enabling/supporting/… <something>" clauses are where unsupported purposes and results hide.
+    _PURPOSE_VERBS = (r"(?:thereby\s+)?(?:enabling|supporting|ensuring|aiding|streamlining|boosting|enhancing|improving|informing|"
+                      r"facilitating|driving|allowing|helping|accelerating|optimizing|validating|resulting in|leading to|contributing to)\b")
+    _PURPOSE_CLAUSE = re.compile(r",\s*" + _PURPOSE_VERBS + r"[^,;]*$", re.I)
+    _PURPOSE_PART = re.compile(r"(?:,|\band)\s+(?=" + _PURPOSE_VERBS + ")", re.I)
+    _STOP = {"the", "and", "for", "with", "into", "from", "that", "this", "their", "more", "data", "work", "quality", "reliable"}
+
+    @staticmethod
+    def _stems(text):
+        return {w[:6] for w in re.findall(r"[a-z][a-z\-]{3,}", text.lower())}
+
+    def strip_unsupported_purposes(self, data):
+        """Deterministic guard: cut a trailing purpose/result clause (", enabling …", "… and supporting …") from the first
+        part whose content words are mostly not in the item's own facts."""
+        removed = []
+        for where, (kind, item_id), text in self._statements(data):
+            if kind == "CAREER_OBJECTIVE":
+                continue
+            m = self._PURPOSE_CLAUSE.search(text)
+            facts = self._item_facts(kind, item_id)
+            if not m or not facts:
+                continue
+            known = self._stems(" ".join(f.split(": ", 1)[-1] for f in facts))  # without "Topic:" labels
+            clause, cut_at = m.group(0), None
+            starts = [0] + [p.start() for p in self._PURPOSE_PART.finditer(clause) if p.start() > 0]
+            for a, b in zip(starts, starts[1:] + [len(clause)]):
+                words = [w for w in re.findall(r"[a-z][a-z\-]{3,}", clause[a:b].lower()) if w not in self._STOP]
+                words = [w for w in words if not re.fullmatch(self._PURPOSE_VERBS, w, re.I)]
+                if words and sum(w[:6] in known for w in words) / len(words) < 0.67:
+                    cut_at = m.start() + a
+                    break
+            if cut_at is not None:
+                new = text[:cut_at].rstrip(" ,") + "."
+                data[where[0]][where[1]]["bullets"][where[2]] = new
+                removed.append({"before": text, "after": new, "problem": "unsupported purpose clause: " + text[cut_at:].strip(" ,.")})
+        return removed
+
+    def fact_check(self, data):
+        """Second pass: a strict checker reviews each bullet against ITS item's facts (grouped per item, which keeps it
+        focused) and rewrites the ones that claim more than the facts say — purposes, outcomes, level of involvement,
+        or work that belongs to another item. Returns the fixes it applied."""
+        statements = self._statements(data)
+        if not statements:
+            return []
+        groups, n = [], 0
+        for key in dict.fromkeys(s[1] for s in statements):
+            kind, item_id = key
+            if kind == "CAREER_OBJECTIVE":
+                head = "CAREER OBJECTIVE — may use any fact from any item below or the education/skills."
+            else:
+                facts = self._item_facts(kind, item_id) or ["(unknown item — nothing is supported)"]
+                head = f"{'PROJECT' if kind == 'SELECTED_PROJECTS' else 'JOB'} {item_id} — its ONLY facts:\n" + "\n".join(f"  * {f}" for f in facts)
+            lines = []
+            for s in statements:
+                if s[1] == key:
+                    n += 1
+                    lines.append(f"  {n}. {s[2]}")
+            groups.append(head + "\n  Statements:\n" + "\n".join(lines))
+        prompt = f"""You are a strict fact-checker for a resume.
+Candidate education: {self.profile['education']['fact']} GPA {self.profile['education']['gpa']}. Skills: {self.profile['skills']['technical']}
+
+{chr(10).join(groups)}
+
+Check every numbered statement against the facts of the item it is listed under (the objective against all items).
+Unsupported = anything those facts do not state: actions, tools, results, purposes ("enabling…", "to validate…",
+"for reproducibility"), the candidate's level of involvement ("supported scans" is not "conducted"/"executed" scans,
+"planned" is not "conducted", no "led" unless a fact says so), and work that belongs to a different item.
+Rephrasing, merging facts and job-description keywords are fine when they describe something the facts state.
+For a statement with unsupported parts, rewrite it using ONLY its item's facts, keeping style and keywords; the rewrite
+replaces the whole statement, so return it complete (max 20 words for bullets). Never add new claims in a rewrite.
+Go through EVERY statement in order.
+Return JSON: {{"review": [{{"n": <number>, "unsupported": ["<phrase>", ...], "rewrite": "<fixed statement, or empty>"}}]}}"""
+        _, result = self._chat([{"role": "system", "content": "You check resumes against facts. Return only valid JSON."},
+                                {"role": "user", "content": prompt}])
+        order = [s for key in dict.fromkeys(s[1] for s in statements) for s in statements if s[1] == key]
+        applied = []
+        for fix in result.get("review", result.get("fixes", [])):
+            if not fix.get("unsupported", True) or not fix.get("rewrite"):
+                continue
+            try:
+                where, _, old = order[int(fix["n"]) - 1]
+            except (KeyError, ValueError, IndexError, TypeError):
+                continue
+            new = str(fix.get("rewrite", "")).strip()
+            if not new or new == old or len(new.split()) < len(old.split()) / 2:  # a fragment, not a rewrite
+                continue
+            if where == ("CAREER_OBJECTIVE",):
+                data["CAREER_OBJECTIVE"] = new
+            else:
+                data[where[0]][where[1]]["bullets"][where[2]] = new
+            applied.append({"before": old, "after": new, "problem": "; ".join(map(str, fix.get("unsupported", [])))})
+        return applied + self.strip_unsupported_purposes(data)
+
     def find_invented_numbers(self, data, job_description, allowed_courses):
         """Statements whose numbers (metrics, %, counts) appear in neither the profile nor the JD.
 
@@ -397,6 +553,7 @@ Available upon request.
         known = set(_NUMBER.findall(self.fact_sheet() + job_description + " ".join(allowed_courses)))
         statements = [data.get("CAREER_OBJECTIVE", "")]
         statements += [b for p in data.get("SELECTED_PROJECTS", []) for b in p.get("bullets", [])]
+        statements += [b for e in data.get("EXPERIENCE", []) if isinstance(e, dict) for b in e.get("bullets", [])]
         statements += data.get("EXPERIENCE_BULLETS", [])
         issues = []
         for text in statements:
@@ -417,6 +574,14 @@ Available upon request.
             {"role": "user", "content": self.build_prompt(job_description, allowed_courses)},
         ]
         raw_text, data = self._chat(messages)
+        missing = [k for k in self.REQUIRED_KEYS if not data.get(k)]
+        if missing:  # the model sometimes stops after a few keys
+            _, again = self._chat(messages + [
+                {"role": "assistant", "content": raw_text},
+                {"role": "user", "content": f"Your JSON is missing {', '.join(missing)}. Return the full JSON object with ALL keys."},
+            ])
+            data = {**data, **again}
+            raw_text = json.dumps(data, ensure_ascii=False)  # what the number-retry below shows the model
         issues = self.find_invented_numbers(data, job_description, allowed_courses)
         retried = bool(issues)
         if issues:
@@ -432,12 +597,20 @@ Available upon request.
             _, fixed = self._chat(messages)
             data = {**data, **fixed}  # the retry sometimes returns only the rewritten keys
             issues = self.find_invented_numbers(data, job_description, allowed_courses)
+        # last, so nothing rewritten after it can bring an unsupported claim back
+        try:
+            fact_fixes = self.fact_check(data)
+        except Exception as e:  # noqa: BLE001 — quota/parse trouble: keep the CV, flag it for a human look
+            fact_fixes = [{"before": "", "after": "", "problem": f"fact check skipped: {type(e).__name__}"}]
+        issues = self.find_invented_numbers(data, job_description, allowed_courses)
+        if fact_fixes and fact_fixes[0]["problem"].startswith("fact check skipped"):
+            issues.append({"text": "בדיקת העובדות לא רצה — לקרוא את הקו\"ח לפני שליחה", "numbers": []})
 
         # One-page content trimmer
         raw_projects = data.get("SELECTED_PROJECTS", [])
         for proj in raw_projects:
             proj["bullets"] = trim_bullets(proj.get("bullets", []), 3, 20)
-        raw_exp = trim_bullets(data.get("EXPERIENCE_BULLETS", []), 4, 20)
+        raw_exp = self.experience_bullets(data)
         raw_objective = trim_words(data.get("CAREER_OBJECTIVE", ""), 70)
         validated_courses = select_valid_courses(data.get("KEY_COURSES", ""), allowed_courses, max_courses=3)
 
@@ -448,7 +621,10 @@ Available upon request.
             "ats_before": data.get("ATS_SCORE_BEFORE", "N/A"),
             "ats_after": data.get("ATS_SCORE_AFTER", "N/A"),
             "selected_projects": [p.get("id") for p in raw_projects[:2]],
+            "experience": raw_exp,
+            "projects_raw": raw_projects,
             "retried_for_invented_numbers": retried,
+            "fact_check": fact_fixes,
             "warnings": issues,
             "sections": {
                 "CAREER_OBJECTIVE": escape_latex(raw_objective),
@@ -468,7 +644,9 @@ Available upon request.
             "PROJECTS_SECTION": self.build_projects_latex(
                 [{"id": pid, "bullets": [f"Mock {pid} Bullet 1", f"Mock {pid} Bullet 2"]} for pid in first_two]
             ),
-            "EXPERIENCE_SECTION": self.build_experience_latex(["Mock Experience Bullet 1"]),
+            "EXPERIENCE_SECTION": self.build_experience_latex(
+                {job["id"]: [f"Mock {job['id']} Bullet {i}" for i in range(1, job["max_bullets"] + 1)] for job in self.jobs}
+            ),
             "SKILLS_SECTION": self.build_skills_latex({"Technical": "Python, LaTeX", "Soft Skills": "Teamwork"}),
         }
 
@@ -496,4 +674,29 @@ Available upon request.
         result = self.generate(job_description, allowed_courses)
         result["latex"] = self.render_latex(result["sections"])
         result["pdf"], result["pages"] = self.compile_pdf(result["latex"]) if compile_pdf else (None, None)
+        if compile_pdf:
+            self.fit_one_page(result)
         return result
+
+    def fit_one_page(self, result, max_steps=6):
+        """Over one page → drop whole bullets (never cut mid-sentence) and recompile:
+        first experience bullets above each job's minimum, then the 3rd bullet of the projects (last project first)."""
+        exp, projects = result["experience"], result["projects_raw"]
+        result["trimmed_for_one_page"] = 0
+        for _ in range(max_steps):
+            if not result["pages"] or result["pages"] <= 1:
+                return
+            surplus = [j for j in self.jobs if len(exp.get(j["id"], [])) > j["min_bullets"]]
+            if surplus:
+                job = max(surplus, key=lambda j: len(exp[j["id"]]) - j["min_bullets"])
+                exp[job["id"]] = exp[job["id"]][:-1]
+            else:
+                longer = [p for p in projects[:2] if len(p.get("bullets", [])) > 2]
+                if not longer:
+                    return
+                longer[-1]["bullets"] = longer[-1]["bullets"][:-1]
+            result["sections"]["EXPERIENCE_SECTION"] = self.build_experience_latex(exp)
+            result["sections"]["PROJECTS_SECTION"] = self.build_projects_latex(projects)
+            result["latex"] = self.render_latex(result["sections"])
+            result["pdf"], result["pages"] = self.compile_pdf(result["latex"])
+            result["trimmed_for_one_page"] += 1
